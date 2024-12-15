@@ -1,130 +1,318 @@
-import path from "path";
+import admin from "firebase-admin"
 
-import admin from "firebase-admin";
-import { Availability, Bookings, DetectIntentResponse, Restaurant } from "./objectTypes";
-import { Request } from "express";
+const FIREBASE_CREDENTIALS = JSON.parse(process.env.FIREBASE_CREDENTIALS as string)
 
-const serviceAccountFilePath = path.join(__dirname, "../../my-project-23869-a63b96b66b51.json");
-const serviceAccount = require(serviceAccountFilePath);
-
-admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
-});
-
-const db = admin.firestore();
-
-const restaurantCollectionName = "test_restaurants";
-const bookingsCollectionName = "bookings";
-const availabilityCollectionName = "availability";
-const waitingListCollectionName = "waitingList";
-const callbackRequestsCollectionName = "callbackRequests";
-const customersCollectionName = "customers";
-
-export const findRestaurantByPhone = async (phone: string): Promise<{ data: Restaurant, id: string } | null> => {
-    const restaurantSnapshot = await db.collection(restaurantCollectionName).where("phone", "==", phone).limit(1).get();
-    if (!restaurantSnapshot.empty) {
-        const restaurant = restaurantSnapshot.docs[0].data() as Restaurant;
-        return {
-            data: restaurant,
-            id: restaurantSnapshot.docs[0].id
-        };
+function getFirebaseAdmin() {
+    if (admin.apps.length === 0) {
+        admin.initializeApp({
+            credential: admin.credential.cert({
+                projectId: FIREBASE_CREDENTIALS.project_id,
+                clientEmail: FIREBASE_CREDENTIALS.client_email,
+                privateKey: FIREBASE_CREDENTIALS.private_key
+            }),
+            databaseURL: "https://restaurant_bookings.firebaseio.com"
+        })
     }
-    return null;
-};
-
-export const findAvailabilityByRestaurantPhoneAndDate = async (phone: string, date: string): Promise<{ data: Availability, id: string } | null> => {
-    const restaurantSnapshot = await db.collection(restaurantCollectionName).where("phone", "==", phone).limit(1).get();
-    if (!restaurantSnapshot.empty) {
-        const restaurant = restaurantSnapshot.docs[0];
-        const availabilitySnapshot = await db.collection(restaurantCollectionName)
-            .doc(restaurant.id)
-            .collection(availabilityCollectionName)
-            .where('date', '==', date)
-            .limit(1)
-            .get();
-        if (!availabilitySnapshot.empty) {
-            const restaurant = availabilitySnapshot.docs[0].data() as Availability;
-            return {
-                data: restaurant,
-                id: availabilitySnapshot.docs[0].id
-            };
-        } else {
-            return null;
-        }
-    }
-    return null;
-};
-
-export const findBookingsByRestaurantPhoneAndDate = async (phone: string, date: string): Promise<{ data: Bookings[] } | null> => {
-    const restaurantSnapshot = await db.collection(restaurantCollectionName).where("phone", "==", phone).limit(1).get();
-    if (!restaurantSnapshot.empty) {
-        const restaurant = restaurantSnapshot.docs[0];
-        const bookingsSnapshot = await db.collection(restaurantCollectionName)
-            .doc(restaurant.id)
-            .collection(bookingsCollectionName)
-            .where('date', '==', date)
-            .get();
-        if (!bookingsSnapshot.empty) {
-            const bookingsSnapshot = await db.collection(restaurantCollectionName)
-                .doc(restaurant.id)
-                .collection(bookingsCollectionName)
-                .where('date', '==', date)
-                .get();
-            if (!bookingsSnapshot.empty) {
-                const bookings = bookingsSnapshot.docs.map(doc => ({
-                    ...doc.data()
-                })) as Bookings[];
-
-                return {
-                    data: bookings
-                };
-            } else {
-                return null;
-            }
-        } else {
-            return null;
-        }
-    }
-    return null;
+    return admin
 }
 
-const saveToBookings = async (request: Request) => {
-    try {
-        const detectIntentResponse = request.body as DetectIntentResponse;
-        const parameters = detectIntentResponse.sessionInfo.parameters;
-        const restaurantSnapshot = await db.collection(restaurantCollectionName)
-            .where('phone', '==', '+390811234567')
-            .limit(1)
-            .get();
+const db = getFirebaseAdmin().firestore()
 
+import { Availability, Bookings, Callback, Restaurant, WaitingList } from "./types"
+
+const restaurantCollectionName = "test_restaurants"
+const bookingsCollectionName = "bookings"
+const availabilityCollectionName = "availability"
+const waitingListCollectionName = "waitingList"
+const callbackRequestsCollectionName = "callbackRequests"
+
+export const findRestaurantByPhone = async (restaurantNumber: string): Promise<{ data: Restaurant, id: string } | null> => {
+    try {
+        const restaurantSnapshot = await db.collection(restaurantCollectionName).where("phone", "==", restaurantNumber).limit(1).get()
         if (!restaurantSnapshot.empty) {
-            const restaurantDoc = restaurantSnapshot.docs[0];
-            const bookingsRef = restaurantDoc.ref.collection(bookingsCollectionName);
-            const day = parameters.date.day;
-            const month = parameters.date.month;
-            const year = parameters.date.year;
-            const hours = parameters.time.hours;
-            const minutes = parameters.time.minutes;
-            const date = new Date(`${day}/${month + 1}/${year}`).toLocaleDateString("en-US", { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'Europe/Rome' });
-            const time = new Date(Date.UTC(year, month + 1, day, hours, minutes, 0)).toLocaleTimeString("en-US", { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Europe/Rome' });
-            let newReservation: Bookings = {
-                customerEmail: parameters.email,
-                customerName: parameters.name.name,
-                customerPhone: parameters.phone,
-                date: date,
-                duration: "2 H",
-                endTime: time,
-                partySize: parameters.number_of_people,
-                specialRequests: "No",
-                startTime: time,
-                status: "pending"
-            };
-            await bookingsRef.add(newReservation);
-            console.log('Booking data saved successfully!');
-        } else {
-            console.log('No restaurant found with the given phone number.');
+            const restaurant = restaurantSnapshot.docs[0].data() as Restaurant
+            return {
+                data: restaurant,
+                id: restaurantSnapshot.docs[0].id
+            }
+        }
+        return null
+    } catch (error) {
+        console.error('Error at findRestaurantByPhone:', error)
+        return null
+    }
+}
+
+export const findAvailabilityByRestaurantPhoneAndDate = async ({ restaurantNumber, date }: { restaurantNumber: string, date: string }): Promise<{ data: Availability, id: string } | null> => {
+    try {
+        const restaurantSnapshot = await db.collection(restaurantCollectionName).where("phone", "==", restaurantNumber).limit(1).get()
+        if (!restaurantSnapshot.empty) {
+            const restaurant = restaurantSnapshot.docs[0]
+            const availabilitySnapshot = await db.collection(restaurantCollectionName)
+                .doc(restaurant.id)
+                .collection(availabilityCollectionName)
+                .where('date', '==', date)
+                .limit(1)
+                .get()
+            if (!availabilitySnapshot.empty) {
+                const restaurant = availabilitySnapshot.docs[0].data() as Availability
+                return {
+                    data: restaurant,
+                    id: availabilitySnapshot.docs[0].id
+                }
+            } else {
+                return null
+            }
+        }
+        return null
+    } catch (error) {
+        console.error('Error at findAvailabilityByRestaurantPhoneAndDate:', error)
+        return null
+    }
+}
+
+export const addBookings = async ({ booking, restaurantId }: { booking: Bookings, restaurantId: string }): Promise<{ id: string, status: boolean }> => {
+    try {
+        const restaurantRef = db.collection(restaurantCollectionName).doc(restaurantId)
+        const bookingsRef = restaurantRef.collection(bookingsCollectionName)
+        const newBookingRef = await bookingsRef.add(booking)
+        return {
+            id: newBookingRef.id,
+            status: true
         }
     } catch (error) {
-        console.error('Error saving booking data:', error);
+        console.error('Error at addBookings:', error)
+        return {
+            id: "",
+            status: false
+        }
     }
-};
+}
+
+export const addWaitingList = async ({ waitingList, restaurantId }: { waitingList: WaitingList, restaurantId: string }): Promise<{ id: string, status: boolean }> => {
+    try {
+        const restaurantRef = db.collection(restaurantCollectionName).doc(restaurantId)
+        const waitingListRef = restaurantRef.collection(waitingListCollectionName)
+        const newWaitingList = await waitingListRef.add(waitingList)
+        return {
+            id: newWaitingList.id,
+            status: true
+        }
+    } catch (error) {
+        console.error('Error at addWaitingList:', error)
+        return {
+            id: "",
+            status: false
+        }
+    }
+}
+
+export const addCallback = async ({ callback, restaurantId }: { callback: Callback, restaurantId: string }): Promise<{ id: string, status: boolean }> => {
+    try {
+        const restaurantRef = db.collection(restaurantCollectionName).doc(restaurantId)
+        const callbackRef = restaurantRef.collection(callbackRequestsCollectionName)
+        const newCallback = await callbackRef.add(callback)
+        return {
+            id: newCallback.id,
+            status: true
+        }
+    } catch (error) {
+        console.error('Error at addCallback:', error)
+        return {
+            id: "",
+            status: false
+        }
+    }
+}
+
+export const findBookingByCustomerPhone = async ({ customerPhone, restaurantId, status }: { customerPhone: string, restaurantId: string, status: string }): Promise<{ data: Bookings[] } | null> => {
+    try {
+        const bookingsSnapshot = await db.collection(restaurantCollectionName)
+            .doc(restaurantId)
+            .collection(bookingsCollectionName)
+            .where('customerPhone', '==', customerPhone)
+            .where("status", "==", status)
+            .get()
+        if (!bookingsSnapshot.empty) {
+            const bookings = bookingsSnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            })) as Bookings[]
+            return {
+                data: bookings
+            }
+        } else {
+            return null
+        }
+    } catch (error) {
+        console.error('Error at findBookingByCustomerPhone:', error)
+        return null
+    }
+}
+
+export const findBookingByCustomerEmail = async ({ email, restaurantId }: { email: string, restaurantId: string }): Promise<{ data: Bookings[] } | null> => {
+    try {
+        const bookingsSnapshot = await db.collection(restaurantCollectionName)
+            .doc(restaurantId)
+            .collection(bookingsCollectionName)
+            .where('customerEmail', '==', email)
+            .where("status", "==", "pending")
+            .get()
+        if (!bookingsSnapshot.empty) {
+            const bookings = bookingsSnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            })) as Bookings[]
+            return {
+                data: bookings
+            }
+        } else {
+            return null
+        }
+    } catch (error) {
+        console.error('Error at findBookingByCustomerEmail:', error)
+        return null
+    }
+}
+
+export const findBookingByCustomerName = async ({ name, restaurantId }: { name: string, restaurantId: string }): Promise<{ data: Bookings[] } | null> => {
+    try {
+        const bookingsSnapshot = await db.collection(restaurantCollectionName)
+            .doc(restaurantId)
+            .collection(bookingsCollectionName)
+            .where("status", "==", "pending")
+            .get()
+        if (!bookingsSnapshot.empty) {
+            const nameLower = name.toLowerCase()
+            const bookings = bookingsSnapshot.docs
+                .map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                } as Bookings))
+                .filter((booking: Bookings) =>
+                    booking.customerName.toLowerCase().includes(nameLower)
+                )
+
+            if (bookings.length > 0) {
+                return { data: bookings }
+            }
+            return null
+        } else {
+            return null
+        }
+    } catch (error) {
+        console.error('Error at findBookingByCustomerName:', error)
+        return null
+    }
+}
+
+export const findBookingByCustomerDate = async ({ date, restaurantId }: { date: string, restaurantId: string }): Promise<{ data: Bookings[] } | null> => {
+    try {
+        const bookingsSnapshot = await db.collection(restaurantCollectionName)
+            .doc(restaurantId)
+            .collection(bookingsCollectionName)
+            .where('date', '==', date)
+            .where("status", "==", "pending")
+            .get()
+        if (!bookingsSnapshot.empty) {
+            const bookings = bookingsSnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            })) as Bookings[]
+            return {
+                data: bookings
+            }
+        } else {
+            return null
+        }
+    } catch (error) {
+        console.error('Error at findBookingByCustomerDate:', error)
+        return null
+    }
+}
+
+export const findBookingByCustomerDateAndBookingStatus = async ({ date, restaurantId, status }: { date: string, restaurantId: string, status: string }): Promise<{ data: Bookings[] } | null> => {
+    try {
+        const bookingsSnapshot = await db.collection(restaurantCollectionName)
+            .doc(restaurantId)
+            .collection(bookingsCollectionName)
+            .where('date', '==', date)
+            .where("status", "==", status)
+            .get()
+        if (!bookingsSnapshot.empty) {
+            const bookings = bookingsSnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            })) as Bookings[]
+            return {
+                data: bookings
+            }
+        } else {
+            return null
+        }
+    } catch (error) {
+        console.error('Error at findBookingByCustomerDateAndBookingStatus:', error)
+        return null
+    }
+}
+
+export const findBookingByCustomerReservationNumber = async ({ reservationNumber, restaurantId }: { reservationNumber: string, restaurantId: string }): Promise<{ data: Bookings[] } | null> => {
+    try {
+        const bookingsSnapshot = await db.collection(restaurantCollectionName)
+            .doc(restaurantId)
+            .collection(bookingsCollectionName)
+            .where('reservationNumber', '==', reservationNumber)
+            .where("status", "==", "pending")
+            .get()
+        if (!bookingsSnapshot.empty) {
+            const bookings = bookingsSnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            })) as Bookings[]
+            return {
+                data: bookings
+            }
+        } else {
+            return null
+        }
+    } catch (error) {
+        console.error('Error at findBookingByCustomerReservationNumber:', error)
+        return null
+    }
+}
+
+export const updateBookingProperties = async ({ restaurantId, bookingId, updates }: { restaurantId: string, bookingId: string, updates: Partial<Bookings> }): Promise<{ id: string, status: boolean }> => {
+    try {
+        const restaurantRef = db.collection(restaurantCollectionName).doc(restaurantId)
+        const bookingRef = restaurantRef.collection(bookingsCollectionName).doc(bookingId)
+        await bookingRef.update(updates)
+        return {
+            id: bookingId,
+            status: true
+        }
+    } catch (error) {
+        console.error("Error at updateBookingProperty:", error)
+        return {
+            id: "",
+            status: false
+        }
+    }
+}
+
+export const addAvailability = async ({ availability, restaurantId }: { availability: Availability, restaurantId: string }): Promise<{ id: string, status: boolean }> => {
+    try {
+        const restaurantRef = db.collection(restaurantCollectionName).doc(restaurantId)
+        const availabilityRef = restaurantRef.collection(availabilityCollectionName)
+        const newAvailability = await availabilityRef.add(availability)
+        return {
+            id: newAvailability.id,
+            status: true
+        }
+    } catch (error) {
+        console.error('Error at addAvailability:', error)
+        return {
+            id: "",
+            status: false
+        }
+    }
+}

@@ -1,3 +1,12 @@
-export { checkWorkingHours } from "./checkWorkingHours";
-export { getFutureHolidays } from "./getFutureHolidays";
-export { checkAvailableTables } from "./checkAvailableTables";
+export { checkWorkingHours } from "./checkWorkingHours"
+export { getFutureHolidays } from "./getFutureHolidays"
+export { checkAvailableTables } from "./checkAvailableTables"
+export { defaultWelcomeIntent } from "./defaultWelcomeIntent"
+export { addToBookings } from "./addToBookings"
+export { addToWaitingList } from "./addToWaitingList"
+export { addToCallback } from "./addToCallback"
+export { getBookingFromPhone } from "./getBookingFromPhone"
+export { invalidateBookingDate } from "./invalidateBookingDate"
+export { getReservationFromParameter } from "./getReservationFromParameter"
+export { cancellReservation } from "./cancellReservation"
+export { updateBooking } from "./updateBooking"

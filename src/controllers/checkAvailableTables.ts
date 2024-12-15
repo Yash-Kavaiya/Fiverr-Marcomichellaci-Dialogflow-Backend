@@ -1,141 +1,158 @@
-import { Request } from "express";
-import { DetectIntentResponse, DialogflowResponse, WeeklyOperatingHours, Slot, Availability } from "../utils/objectTypes";
-import { ERROR_MESSAGE, TIMEZONE, DIALOGFLOW_FLAGS } from "../config/constants";
-import { findAvailabilityByRestaurantPhoneAndDate, findBookingsByRestaurantPhoneAndDate, findRestaurantByPhone } from "../utils/firebaseFunctions";
-import { generateDialogflowResponse, getCurrentDayOfWeek, isTimeWithinRange } from "../utils/utils";
+import { DetectIntentResponse, DialogflowResponse, WeeklyOperatingHours, Slot } from "../utils/types"
+import { ERROR_MESSAGE, BOOKING_STATUS } from "../config/constants"
+import { findAvailabilityByRestaurantPhoneAndDate, findBookingByCustomerDateAndBookingStatus, findRestaurantByPhone } from "../utils/firebaseFunctions"
+import { generateDialogflowResponse, getBookingDateAndtime, isTimeWithinRange } from "../utils/utils"
 
-export const checkAvailableTables = async (request: Request): Promise<DialogflowResponse> => {
-    // Change this to get from the request
-    const phone = "+390811234567";
+export const checkAvailableTables = async (detectIntentResponse: DetectIntentResponse): Promise<DialogflowResponse> => {
     try {
-        const detectIntentResponse = request.body as DetectIntentResponse;
-        const session = detectIntentResponse.sessionInfo.session;
-        const parameters = detectIntentResponse.sessionInfo.parameters;
+        const session = detectIntentResponse.sessionInfo.session
+        const parameters = detectIntentResponse.sessionInfo.parameters
+        if (parameters == null) {
+            return generateDialogflowResponse(
+                [ERROR_MESSAGE]
+            )
+        }
+        const { restaurantNumber, restaurantId } = parameters
+        const partySize = parameters.party_size || parameters.new_party_size
+        let day, month, year, hours, minutes = 0
+        if (parameters.BOOKING_TYPE === "ALTERNATE") {
+            day = parameters.alternative_booking_date.day as number
+            month = parameters.alternative_booking_date.month as number
+            year = parameters.alternative_booking_date.year as number
+            hours = parameters.alternative_booking_time.hours as number
+            minutes = parameters.alternative_booking_time.minutes as number
+        }
+        if (parameters.BOOKING_TYPE === "CHANGED") {
+            day = parameters.new_booking_date.day as number
+            month = parameters.new_booking_date.month as number
+            year = parameters.new_booking_date.year as number
+            hours = parameters.new_booking_time.hours as number
+            minutes = parameters.new_booking_time.minutes as number
+        } else {
+            day = parameters.booking_date.day as number
+            month = parameters.booking_date.month as number
+            year = parameters.booking_date.year as number
+            hours = parameters.booking_time.hours as number
+            minutes = parameters.booking_time.minutes as number
+        }
+        if (day === 0) {
+            return generateDialogflowResponse(
+                [ERROR_MESSAGE]
+            )
+        }
 
-        const partySize = parameters.number_of_people;
-        const day = parameters.date.day;
-        const month = parameters.date.month;
-        const year = parameters.date.year;
-        const hours = parameters.time.hours;
-        const minutes = parameters.time.minutes;
-        const currentDay = getCurrentDayOfWeek();
-        const bookingDate = new Date(`${day}/${month + 1}/${year}`).toLocaleDateString("en-US", { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: TIMEZONE });
-        const bookingTime = new Date(Date.UTC(year, month + 1, day, hours, minutes, 0)).toLocaleTimeString("en-US", { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: TIMEZONE });
-        const restaurant = await findRestaurantByPhone(phone);
+        const { currentDay, bookingDate, bookingTime } = getBookingDateAndtime({ day: day, month: month - 1, year: year, hours: hours, minutes: minutes })
+        const restaurant = await findRestaurantByPhone(restaurantNumber)
         if (restaurant) {
-            const { id: restaurantId, data: restaurantData } = restaurant;
+            const { data: restaurantData } = restaurant
 
             // 1. Check for holiday
-            const isHoliday = restaurantData.holidays.some(holiday => holiday.date === bookingDate);
+            const isHoliday = restaurantData.holidays.some(holiday => holiday.date === bookingDate)
             if (isHoliday) {
                 return generateDialogflowResponse(
                     [
-                        "There is no slot available for reservation today beacuase of a holiday.",
-                        "Do you want to choose anothe date and time?"
+                        "There is no slot available for reservation today beacuase of a holiday."
                     ],
                     {
                         session: session,
                         parameters: {
-                            bokkingStatus: DIALOGFLOW_FLAGS.NO_BOOKING
+                            bookingStatus: BOOKING_STATUS.NO_BOOKING
                         }
                     }
-                );
+                )
             }
 
-            // 2. Check if there's a special event
-            const hasSpecialEvent = restaurantData.specialEvents.some(event =>
+            // Find the matching special event
+            const specialEvent = restaurantData.specialEvents.find(event =>
                 event.date === bookingDate && event.requiresReservation === true
-            );
-            if (hasSpecialEvent) {
+            )
+            if (specialEvent) {
                 return generateDialogflowResponse(
                     [
                         "There is no slot available for reservation today beacuase of a special event.",
-                        "Do you want to choose anothe date and time?"
+                        `Event name: ${specialEvent.name}, date: ${specialEvent.date} and description: ${specialEvent.description}.`
                     ],
                     {
                         session: session,
                         parameters: {
-                            bokkingStatus: DIALOGFLOW_FLAGS.NO_BOOKING
+                            bookingStatus: BOOKING_STATUS.SPECIAL_EVENT
                         }
                     }
-                );
+                )
             }
 
             // 3. Check if the restaurant is open on this day
-            const operatingHours = restaurantData.operatingHours[currentDay as keyof WeeklyOperatingHours];
+            const operatingHours = restaurantData.operatingHours[currentDay as keyof WeeklyOperatingHours]
             if (!operatingHours) {
                 return generateDialogflowResponse(
                     [
-                        "Restaurant is not open today.",
-                        "Do you want to choose anothe date and time?"
+                        `Restaurant is not available for reservation at ${bookingTime} on ${bookingDate}.`
                     ],
                     {
                         session: session,
                         parameters: {
-                            bokkingStatus: DIALOGFLOW_FLAGS.NO_BOOKING
+                            bookingStatus: BOOKING_STATUS.NO_BOOKING
                         }
                     }
-                );
+                )
             }
 
             // 4. Get availability for the date
-            const availability = await findAvailabilityByRestaurantPhoneAndDate(phone, bookingDate);
+            const availability = await findAvailabilityByRestaurantPhoneAndDate({ restaurantNumber: restaurantNumber, date: bookingDate })
+            console.log(availability?.id)
             if (!availability) {
                 return generateDialogflowResponse(
                     [
-                        "Restaurant is not open today.",
-                        "Do you want to choose anothe date and time?"
+                        `Restaurant is not available for reservation at ${bookingTime} on ${bookingDate}.`
                     ],
                     {
                         session: session,
                         parameters: {
-                            bokkingStatus: DIALOGFLOW_FLAGS.NO_BOOKING
+                            bookingStatus: BOOKING_STATUS.NO_BOOKING
                         }
                     }
-                );
+                )
             }
-            const { id: availabilityId, data: availabilityData } = availability;
+            const { data: availabilityData } = availability
 
             // Get the existing bookings for the booking date
-            const existingBookings = await findBookingsByRestaurantPhoneAndDate(phone, bookingDate);
-            let alreadyBookedSeats = 0;
+            const existingBookings = await findBookingByCustomerDateAndBookingStatus({ date: bookingDate, restaurantId: restaurantId, status: "confirmed" })
+            let alreadyBookedSeats = 0
             existingBookings?.data.forEach(data => {
                 if (data.status === 'confirmed') {
-                    alreadyBookedSeats += data.partySize;
+                    alreadyBookedSeats += data.partySize
                 }
-            });
+            })
 
             // 5. Check all-day reservation if enabled
-            const { bookingStartTime, bookingEndTime, availableSeats } = availabilityData.accpetAllDayReservation;
+            const { bookingStartTime, bookingEndTime, availableSeats } = availabilityData.accpetAllDayReservation
             if (availabilityData.accpetAllDayReservation.status) {
                 if (!isTimeWithinRange(bookingTime, bookingStartTime, bookingEndTime)) {
                     return generateDialogflowResponse(
                         [
-                            `Booking is only available between ${bookingStartTime} and ${bookingEndTime}.`,
-                            "Do you want to choose anothe date and time?"
+                            `Booking is only available between ${bookingStartTime} and ${bookingEndTime}.`
                         ],
                         {
                             session: session,
                             parameters: {
-                                bokkingStatus: DIALOGFLOW_FLAGS.NO_BOOKING
+                                bookingStatus: BOOKING_STATUS.NO_BOOKING
                             }
                         }
-                    );
+                    )
                 }
 
                 if ((availableSeats - alreadyBookedSeats) < partySize) {
                     return generateDialogflowResponse(
                         [
-                            `Not enough seats avaialable for the date ${bookingDate} at ${bookingTime}.`,
-                            "Do you want to choose anothe date and time?"
+                            `Not enough seats avaialable for the date ${bookingDate} at ${bookingTime}.`
                         ],
                         {
                             session: session,
                             parameters: {
-                                bokkingStatus: DIALOGFLOW_FLAGS.NO_BOOKING
+                                bookingStatus: BOOKING_STATUS.NO_BOOKING
                             }
                         }
-                    );
+                    )
                 }
 
                 return generateDialogflowResponse(
@@ -143,49 +160,50 @@ export const checkAvailableTables = async (request: Request): Promise<Dialogflow
                     {
                         session: session,
                         parameters: {
-                            bokkingStatus: DIALOGFLOW_FLAGS.YES
+                            bookingStatus: BOOKING_STATUS.YES,
+                            duration: availabilityData.accpetAllDayReservation.duration
                         }
                     }
-                );
+                )
             }
 
             // 6. Check lunch and dinner slots
-            let availableTimeSlots: Slot[] = [];
+            let availableTimeSlots: Slot[] = []
             const lunchData = availabilityData.lunch
             if (lunchData) {
                 // Add a small amount of logic to update the availableSeats depending on the alreadyBookedSeats
                 const matchingSlots = lunchData.timeSlots.filter(slot => {
                     return isTimeWithinRange(bookingTime, slot.bookingStartTime, slot.bookingEndTime) &&
-                        (slot.availableSeats - alreadyBookedSeats) >= partySize;
-                });
-                availableTimeSlots = [...availableTimeSlots, ...matchingSlots];
+                        (slot.availableSeats - alreadyBookedSeats) >= partySize
+                })
+                availableTimeSlots = [...availableTimeSlots, ...matchingSlots]
             }
             const dinnerData = availabilityData.lunch
             if (dinnerData) {
                 // Add a small amount of logic to update the availableSeats depending on the alreadyBookedSeats
                 const matchingSlots = dinnerData.timeSlots.filter(slot => {
                     return isTimeWithinRange(bookingTime, slot.bookingStartTime, slot.bookingEndTime) &&
-                        (slot.availableSeats - alreadyBookedSeats) >= partySize;
-                });
-                availableTimeSlots = [...availableTimeSlots, ...matchingSlots];
+                        (slot.availableSeats - alreadyBookedSeats) >= partySize
+                })
+                availableTimeSlots = [...availableTimeSlots, ...matchingSlots]
             }
             availableTimeSlots.forEach(timeSlot => {
                 timeSlot.availableSeats = timeSlot.availableSeats - alreadyBookedSeats
-            });
+            })
 
             if (availableTimeSlots.length === 0) {
-                const allSlots = availabilityData.lunch.timeSlots.concat(availabilityData.dinner.timeSlots).map(slot => slot);
+                const allSlots = availabilityData.lunch.timeSlots.concat(availabilityData.dinner.timeSlots).map(slot => slot)
 
                 return generateDialogflowResponse(
                     [`Not enough seats avaialable for the date ${bookingDate} at ${bookingTime}.`,],
                     {
                         session: session,
                         parameters: {
-                            bokkingStatus: DIALOGFLOW_FLAGS.NO,
+                            bookingStatus: BOOKING_STATUS.NO,
                             availableTimeSlots: allSlots
                         }
                     }
-                );
+                )
             }
 
             return generateDialogflowResponse(
@@ -193,22 +211,23 @@ export const checkAvailableTables = async (request: Request): Promise<Dialogflow
                 {
                     session: session,
                     parameters: {
-                        bokkingStatus: DIALOGFLOW_FLAGS.YES,
-                        availableTimeSlots: availableTimeSlots
+                        bookingStatus: BOOKING_STATUS.YES,
+                        availableTimeSlots: availableTimeSlots,
+                        duration: availableTimeSlots[0].duration
                     }
                 }
-            );
+            )
 
         } else {
-            console.error('Restaurant not found in Firestore.');
+            console.error('Restaurant not found in Firestore.')
             return generateDialogflowResponse(
                 ['The restaurant is closed at this point for unknown reasons.']
-            );
+            )
         }
     } catch (error) {
-        console.error('Error checking restaurant status:', error);
+        console.error('Error checking restaurant status:', error)
         return generateDialogflowResponse(
             [ERROR_MESSAGE]
-        );
+        )
     }
-};
+}
