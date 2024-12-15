@@ -1,20 +1,20 @@
-import express, { Request, Response } from "express";
-import { generateDialogflowResponse } from "../utils/utils";
-import { addToBookings, addToCallback, addToWaitingList, cancellReservation, checkAvailableTables, checkWorkingHours, defaultWelcomeIntent, getBookingFromPhone, getFutureHolidays, getReservationFromParameter, invalidateBookingDate, updateBooking } from "../controllers";
-import { ERROR_MESSAGE } from "../config/constants";
-import { DetectIntentResponse } from "../utils/types";
+import express, { Request, Response } from "express"
+import { generateDialogflowResponse } from "../utils/utils"
+import { addToBookings, addToCallback, addToWaitingList, cancellReservation, checkAvailableTables, checkWorkingHours, defaultWelcomeIntent, getBookingFromPhone, getFutureHolidays, getReservationFromParameter, invalidateBookingDate, updateBooking } from "../controllers"
+import { ERROR_MESSAGE } from "../config/constants"
+import { DetectIntentResponse } from "../utils/types"
 
-const router = express.Router();
+const router = express.Router()
 
 router.get("/webhook", async (request: Request, response: Response) => {
-    response.status(200).send("Webhook is working okay.");
-});
+    response.status(200).send("Webhook is working okay.")
+})
 
 router.post("/webhook", async (request: Request, response: Response) => {
-    let responseData = {};
+    let responseData = {}
     try {
-        const detectIntentResponse = request.body as DetectIntentResponse;
-        const tag = detectIntentResponse.fulfillmentInfo.tag;
+        const detectIntentResponse = request.body as DetectIntentResponse
+        const tag = detectIntentResponse.fulfillmentInfo.tag
         console.log(`Tag: ${tag}`)
         if (tag === "defaultWelcomeIntent") {
             responseData = await defaultWelcomeIntent(detectIntentResponse)
@@ -59,6 +59,6 @@ router.post("/webhook", async (request: Request, response: Response) => {
         )
     }
     response.send(responseData)
-});
+})
 
-export default router;
+export default router
