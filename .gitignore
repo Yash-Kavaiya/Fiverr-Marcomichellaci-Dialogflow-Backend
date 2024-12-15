@@ -2,3 +2,4 @@ node_modules/
 .env
 pnpm-lock.yaml
 my-project-23869-a63b96b66b51.json
+dist/
