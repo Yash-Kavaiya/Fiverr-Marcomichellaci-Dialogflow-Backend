@@ -1,8 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 
 export function apiKeyMiddleware(request: Request, response: Response, next: NextFunction) {
-    console.log("I am here...")
-    console.log(request.path)
     if (request.path.startsWith('/dialogflow')) {
         const authHeader = request.get('Authorization')
         if (!authHeader) {
