@@ -1,13 +1,19 @@
 import { parse, isAfter, isEqual } from "date-fns"
 
-import { TIMEZONE } from "../config/constants"
+import { ERROR_MESSAGE, TIMEZONE } from "../config/constants"
 import { findRestaurantByPhone } from "../utils/firebaseFunctions"
 import { generateDialogflowResponse } from "../utils/utils"
-import { DialogflowResponse } from "../utils/types"
+import { DetectIntentResponse, DialogflowResponse } from "../utils/types"
 
-export const getFutureHolidays = async (): Promise<DialogflowResponse> => {
+export const getFutureHolidays = async (detectIntentResponse: DetectIntentResponse): Promise<DialogflowResponse> => {
     try {
-        const restaurant = await findRestaurantByPhone("+390811234567")
+        const parameters = detectIntentResponse.sessionInfo.parameters
+        if (parameters == null) {
+            return generateDialogflowResponse(
+                [ERROR_MESSAGE]
+            )
+        }
+        const restaurant = await findRestaurantByPhone(parameters.restaurantNumber)
         if (restaurant) {
             const { data: restaurantData } = restaurant
             const currentDate = new Date().toLocaleDateString("it-IT", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: TIMEZONE })

@@ -19,9 +19,9 @@ router.post("/webhook", async (request: Request, response: Response) => {
         if (tag === "defaultWelcomeIntent") {
             responseData = await defaultWelcomeIntent(detectIntentResponse)
         } else if (tag === "checkWorkingHours") {
-            responseData = await checkWorkingHours()
+            responseData = await checkWorkingHours(detectIntentResponse)
         } else if (tag === "getFutureHolidays") {
-            responseData = await getFutureHolidays()
+            responseData = await getFutureHolidays(detectIntentResponse)
         } else if (tag === "checkAvailableTables") {
             responseData = await checkAvailableTables(detectIntentResponse)
         } else if (tag === 'addToBookings') {

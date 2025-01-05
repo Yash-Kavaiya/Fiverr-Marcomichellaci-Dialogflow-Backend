@@ -1,11 +1,17 @@
 import { ERROR_MESSAGE, TIMEZONE } from "../config/constants"
 import { findRestaurantByPhone } from "../utils/firebaseFunctions"
-import { DialogflowResponse, WeeklyOperatingHours } from "../utils/types"
+import { DetectIntentResponse, DialogflowResponse, WeeklyOperatingHours } from "../utils/types"
 import { generateDialogflowResponse, isTimeWithinRange } from "../utils/utils"
 
-export const checkWorkingHours = async (): Promise<DialogflowResponse> => {
+export const checkWorkingHours = async (detectIntentResponse: DetectIntentResponse): Promise<DialogflowResponse> => {
     try {
-        const restaurant = await findRestaurantByPhone("+390811234567")
+        const parameters = detectIntentResponse.sessionInfo.parameters
+        if (parameters == null) {
+            return generateDialogflowResponse(
+                [ERROR_MESSAGE]
+            )
+        }
+        const restaurant = await findRestaurantByPhone(parameters.restaurantNumber)
         if (restaurant) {
             const { data: restaurantData } = restaurant
             const { operatingHours, holidays, specialEvents } = restaurantData
