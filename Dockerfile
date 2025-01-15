@@ -19,6 +19,9 @@ COPY . .
 # Build TypeScript to JavaScript
 RUN pnpm build
 
+# Copy static data to the dist folder
+RUN mkdir -p dist/data && cp -r src/data/* dist/data/
+
 # Expose the port the app runs on
 EXPOSE 8000
 
