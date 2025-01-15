@@ -3,6 +3,8 @@ import { compareAsc } from "date-fns"
 import { DetectIntentResponse, DialogflowResponse } from "../utils/types"
 import { generateDialogflowResponse } from "../utils/utils"
 import { ERROR_MESSAGE } from "../config/constants"
+import { MessageKeys } from "../data/messagesKey"
+import { getMessage } from "../utils/dynamicMessages"
 
 export const invalidateBookingDate = async (detectIntentResponse: DetectIntentResponse): Promise<DialogflowResponse | null> => {
     try {
@@ -18,7 +20,9 @@ export const invalidateBookingDate = async (detectIntentResponse: DetectIntentRe
         const flag = compareAsc(new Date(year, month - 1, day), new Date())
         if (flag === -1) {
             return generateDialogflowResponse(
-                ["You have provided a past date for the reservation."],
+                [
+                    getMessage(detectIntentResponse.languageCode, MessageKeys.INVALIDATE_BOOKING_DATE, {})
+                ],
                 undefined,
                 {
                     currentPage: detectIntentResponse.pageInfo.currentPage,

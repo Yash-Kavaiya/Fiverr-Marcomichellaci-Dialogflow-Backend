@@ -2,6 +2,8 @@ import { DetectIntentResponse, DialogflowResponse } from "../utils/types"
 import { generateDialogflowResponse, getBookingDate } from "../utils/utils"
 import { findBookingByCustomerDate, findBookingByCustomerEmail, findBookingByCustomerName, findBookingByCustomerReservationNumber } from "../utils/firebaseFunctions"
 import { ERROR_MESSAGE } from "../config/constants"
+import { MessageKeys } from "../data/messagesKey"
+import { getMessage } from "../utils/dynamicMessages"
 
 export const getReservationFromParameter = async (detectIntentResponse: DetectIntentResponse): Promise<DialogflowResponse | null> => {
     console.log(detectIntentResponse)
@@ -17,7 +19,9 @@ export const getReservationFromParameter = async (detectIntentResponse: DetectIn
             if (bookings) {
                 if (bookings.data.length > 1) {
                     return generateDialogflowResponse(
-                        [`The booking with the reservation number ${parameters.reservation_number} found.`],
+                        [
+                            getMessage(detectIntentResponse.languageCode, MessageKeys.BOOKING_FOUND_W_RESERVATION_NUMBER, { reservationNumber: parameters.reservation_number })
+                        ],
                         {
                             session: detectIntentResponse.sessionInfo.session,
                             parameters: {
@@ -29,7 +33,9 @@ export const getReservationFromParameter = async (detectIntentResponse: DetectIn
                     )
                 } else {
                     return generateDialogflowResponse(
-                        [`The booking with the reservation number ${parameters.reservation_number} found.`],
+                        [
+                            getMessage(detectIntentResponse.languageCode, MessageKeys.BOOKING_FOUND_W_RESERVATION_NUMBER, { reservationNumber: parameters.reservation_number })
+                        ],
                         {
                             session: detectIntentResponse.sessionInfo.session,
                             parameters: {
@@ -42,7 +48,9 @@ export const getReservationFromParameter = async (detectIntentResponse: DetectIn
                 }
             } else {
                 return generateDialogflowResponse(
-                    [`The booking with the reservation number ${parameters.reservation_number} not found.`],
+                    [
+                        getMessage(detectIntentResponse.languageCode, MessageKeys.BOOKING_NOT_FOUND_W_RESERVATION_NUMBER, { reservationNumber: parameters.reservation_number })
+                    ],
                     {
                         session: detectIntentResponse.sessionInfo.session,
                         parameters: {
@@ -73,7 +81,9 @@ export const getReservationFromParameter = async (detectIntentResponse: DetectIn
             if (bookings) {
                 if (bookings.data.length > 1) {
                     return generateDialogflowResponse(
-                        [`The booking with the booking date ${bookingDate} found.`],
+                        [
+                            getMessage(detectIntentResponse.languageCode, MessageKeys.BOOKING_FOUND_W_DATE, { bookingDate: bookingDate })
+                        ],
                         {
                             session: detectIntentResponse.sessionInfo.session,
                             parameters: {
@@ -85,7 +95,9 @@ export const getReservationFromParameter = async (detectIntentResponse: DetectIn
                     )
                 } else {
                     return generateDialogflowResponse(
-                        [`The booking with the booking date ${bookingDate} found.`],
+                        [
+                            getMessage(detectIntentResponse.languageCode, MessageKeys.BOOKING_FOUND_W_DATE, { bookingDate: bookingDate })
+                        ],
                         {
                             session: detectIntentResponse.sessionInfo.session,
                             parameters: {
@@ -98,7 +110,9 @@ export const getReservationFromParameter = async (detectIntentResponse: DetectIn
                 }
             } else {
                 return generateDialogflowResponse(
-                    [`The booking with the booking date ${bookingDate} not found.`],
+                    [
+                        getMessage(detectIntentResponse.languageCode, MessageKeys.BOOKING_NOT_FOUND_W_DATE, { bookingDate: bookingDate })
+                    ],
                     {
                         session: detectIntentResponse.sessionInfo.session,
                         parameters: {
@@ -112,7 +126,9 @@ export const getReservationFromParameter = async (detectIntentResponse: DetectIn
             if (bookings) {
                 if (bookings.data.length > 1) {
                     return generateDialogflowResponse(
-                        [`The booking with the email ${parameters.booking_email} found.`],
+                        [
+                            getMessage(detectIntentResponse.languageCode, MessageKeys.BOOKING_FOUND_W_EMAIL, { bookingEmail: parameters.booking_email })
+                        ],
                         {
                             session: detectIntentResponse.sessionInfo.session,
                             parameters: {
@@ -124,7 +140,9 @@ export const getReservationFromParameter = async (detectIntentResponse: DetectIn
                     )
                 } else {
                     return generateDialogflowResponse(
-                        [`The booking with the email ${parameters.booking_email} found.`],
+                        [
+                            getMessage(detectIntentResponse.languageCode, MessageKeys.BOOKING_FOUND_W_EMAIL, { bookingEmail: parameters.booking_email })
+                        ],
                         {
                             session: detectIntentResponse.sessionInfo.session,
                             parameters: {
@@ -137,7 +155,9 @@ export const getReservationFromParameter = async (detectIntentResponse: DetectIn
                 }
             } else {
                 return generateDialogflowResponse(
-                    [`The booking with the email ${parameters.booking_email} not found.`],
+                    [
+                        getMessage(detectIntentResponse.languageCode, MessageKeys.BOOKING_NOT_FOUND_W_EMAIL, { bookingEmail: parameters.booking_email })
+                    ],
                     {
                         session: detectIntentResponse.sessionInfo.session,
                         parameters: {
@@ -151,7 +171,9 @@ export const getReservationFromParameter = async (detectIntentResponse: DetectIn
             if (bookings) {
                 if (bookings.data.length > 1) {
                     return generateDialogflowResponse(
-                        [`The booking with the name ${parameters.booking_name.name} found.`],
+                        [
+                            getMessage(detectIntentResponse.languageCode, MessageKeys.BOOKING_FOUND_W_NAME, { bookingName: parameters.booking_name.name })
+                        ],
                         {
                             session: detectIntentResponse.sessionInfo.session,
                             parameters: {
@@ -163,7 +185,9 @@ export const getReservationFromParameter = async (detectIntentResponse: DetectIn
                     )
                 } else {
                     return generateDialogflowResponse(
-                        [`The booking with the name ${parameters.booking_name.name} found.`],
+                        [
+                            getMessage(detectIntentResponse.languageCode, MessageKeys.BOOKING_FOUND_W_NAME, { bookingName: parameters.booking_name.name })
+                        ],
                         {
                             session: detectIntentResponse.sessionInfo.session,
                             parameters: {
@@ -176,7 +200,9 @@ export const getReservationFromParameter = async (detectIntentResponse: DetectIn
                 }
             } else {
                 return generateDialogflowResponse(
-                    [`The booking with the name ${parameters.booking_name.name} not found.`],
+                    [
+                        getMessage(detectIntentResponse.languageCode, MessageKeys.BOOKING_NOT_FOUND_W_NAME, { bookingName: parameters.booking_name.name })
+                    ],
                     {
                         session: detectIntentResponse.sessionInfo.session,
                         parameters: {

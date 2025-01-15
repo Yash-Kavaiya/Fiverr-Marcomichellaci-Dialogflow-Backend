@@ -2,6 +2,8 @@ import { Callback, DetectIntentResponse, DialogflowResponse } from "../utils/typ
 import { capitalizeFirstLetter, generateDialogflowResponse } from "../utils/utils"
 import { addCallback } from "../utils/firebaseFunctions"
 import { ERROR_MESSAGE } from "../config/constants"
+import { MessageKeys } from "../data/messagesKey"
+import { getMessage } from "../utils/dynamicMessages"
 
 export const addToCallback = async (detectIntentResponse: DetectIntentResponse): Promise<DialogflowResponse> => {
     try {
@@ -23,11 +25,15 @@ export const addToCallback = async (detectIntentResponse: DetectIntentResponse):
         console.log(newCallbackInfo.id)
         if (newCallbackInfo.status) {
             return generateDialogflowResponse(
-                ["Callback saved."]
+                [
+                    getMessage(detectIntentResponse.languageCode, MessageKeys.CALLBACK_SAVED, {})
+                ]
             )
         } else {
             return generateDialogflowResponse(
-                ["Callback not saved."]
+                [
+                    getMessage(detectIntentResponse.languageCode, MessageKeys.CALLBACK_NOT_SAVED, { errorReason: ERROR_MESSAGE })
+                ]
             )
         }
     } catch (error) {

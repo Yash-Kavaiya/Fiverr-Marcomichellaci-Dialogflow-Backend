@@ -1,4 +1,6 @@
 import { ERROR_MESSAGE, TIMEZONE } from "../config/constants"
+import { MessageKeys } from "../data/messagesKey"
+import { getMessage } from "../utils/dynamicMessages"
 import { findRestaurantByPhone } from "../utils/firebaseFunctions"
 import { DetectIntentResponse, DialogflowResponse, WeeklyOperatingHours } from "../utils/types"
 import { generateDialogflowResponse, isTimeWithinRange } from "../utils/utils"
@@ -26,7 +28,9 @@ export const checkWorkingHours = async (detectIntentResponse: DetectIntentRespon
                     const holiday = holidays[index]
                     if (holiday.date === currentDate) {
                         return generateDialogflowResponse(
-                            [`The restaurant is closed due to ${holiday.reason}.`]
+                            [
+                                getMessage(detectIntentResponse.languageCode, MessageKeys.NO_RESERVATION_HOLIDAY, { holidayReason: holiday.reason })
+                            ]
                         )
                     }
                 }
@@ -38,7 +42,9 @@ export const checkWorkingHours = async (detectIntentResponse: DetectIntentRespon
                     const event = specialEvents[index]
                     if (event.date === currentDate) {
                         return generateDialogflowResponse(
-                            [`The restaurant is closed due to ${event.description}.`]
+                            [
+                                getMessage(detectIntentResponse.languageCode, MessageKeys.NO_RESERVATION_SPECIAL_EVENT, { specialEventName: event.name, specialEventDescription: event.description, websiteUrl: restaurantData.websiteUrl })
+                            ]
                         )
                     }
                 }
@@ -51,17 +57,23 @@ export const checkWorkingHours = async (detectIntentResponse: DetectIntentRespon
             const dinnerClose = currentDayData.dinner.close
             if (isTimeWithinRange(currentTime, lunchOpen, lunchClose) || isTimeWithinRange(currentTime, dinnerOpen, dinnerClose)) {
                 return generateDialogflowResponse(
-                    ["The restaurant is open at this point."]
+                    [
+                        getMessage(detectIntentResponse.languageCode, MessageKeys.RESTAURANT_OPEN, {})
+                    ]
                 )
             } else {
                 return generateDialogflowResponse(
-                    [`The restaurant is close at this point. it is open for lunch between ${lunchOpen} to ${lunchClose} and for dinner between ${dinnerOpen} to ${dinnerClose}.`]
+                    [
+                        getMessage(detectIntentResponse.languageCode, MessageKeys.RESTAURANT_CLOSED_W_INFO, { lunchOpen: lunchOpen, lunchClose: lunchClose, dinnerOpen: dinnerOpen, dinnerClose: dinnerClose })
+                    ]
                 )
             }
         } else {
             console.error("Restaurant not found in Firestore.")
             return generateDialogflowResponse(
-                ["The restaurant is closed at this point for unknown reasons."]
+                [
+                    getMessage(detectIntentResponse.languageCode, MessageKeys.RESTAURANT_CLOSED, {})
+                ]
             )
         }
     } catch (error) {

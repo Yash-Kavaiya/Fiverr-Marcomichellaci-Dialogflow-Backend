@@ -4,6 +4,8 @@ import { ERROR_MESSAGE, TIMEZONE } from "../config/constants"
 import { findRestaurantByPhone } from "../utils/firebaseFunctions"
 import { generateDialogflowResponse } from "../utils/utils"
 import { DetectIntentResponse, DialogflowResponse } from "../utils/types"
+import { MessageKeys } from "../data/messagesKey"
+import { getMessage } from "../utils/dynamicMessages"
 
 export const getFutureHolidays = async (detectIntentResponse: DetectIntentResponse): Promise<DialogflowResponse> => {
     try {
@@ -26,24 +28,31 @@ export const getFutureHolidays = async (detectIntentResponse: DetectIntentRespon
             const futureholidaysNames = futureHolidays.map((holiday) => holiday.reason)
             if (futureholidaysNames.length === 0) {
                 return generateDialogflowResponse(
-                    ["There are no upcoming holidays."]
+                    [
+                        getMessage(detectIntentResponse.languageCode, MessageKeys.NO_HOLIDAY, {})
+                    ]
                 )
             } else {
                 return generateDialogflowResponse(
-                    [`Here are the upcoming holidays: ${futureholidaysNames.join(", ")}.`]
+                    [
+                        getMessage(detectIntentResponse.languageCode, MessageKeys.FORMAT_HOLIDAY, {}),
+                        `${futureholidaysNames.join(", ")}.`
+                    ]
                 )
             }
         } else {
             console.error("Restaurant not found in Firestore")
             return generateDialogflowResponse(
-                ["The restaurant is Closed at this point for unknown reasons."]
+                [
+                    getMessage(detectIntentResponse.languageCode, MessageKeys.RESTAURANT_CLOSED, {})
+                ]
             )
         }
 
     } catch (error) {
         console.error("Error checking restaurant status:", error)
         return generateDialogflowResponse(
-            ["The restaurant is Closed at this point for unknown reasons."]
+            [ERROR_MESSAGE]
         )
     }
 }

@@ -1,7 +1,8 @@
 import { Bookings, DetectIntentResponse, DialogflowResponse } from "../utils/types"
-import { generateDialogflowResponse, getBookingDate } from "../utils/utils"
-import { findBookingByCustomerDate, findBookingByCustomerEmail, findBookingByCustomerName, findBookingByCustomerReservationNumber } from "../utils/firebaseFunctions"
+import { generateDialogflowResponse } from "../utils/utils"
 import { ERROR_MESSAGE } from "../config/constants"
+import { MessageKeys } from "../data/messagesKey"
+import { getMessage } from "../utils/dynamicMessages"
 
 export const formatBookings = (detectIntentResponse: DetectIntentResponse): DialogflowResponse | null => {
     try {
@@ -18,7 +19,7 @@ export const formatBookings = (detectIntentResponse: DetectIntentResponse): Dial
             })
             return generateDialogflowResponse(
                 [
-                    "Please select your reservation from the following by providing the appropriate option:",
+                    getMessage(detectIntentResponse.languageCode, MessageKeys.BOOKING_CANCELLED, {}),
                     bookingsString.join("\n")
                 ]
             )

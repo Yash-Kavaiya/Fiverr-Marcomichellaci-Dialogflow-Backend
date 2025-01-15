@@ -2,6 +2,8 @@ import { WaitingList, DetectIntentResponse, DialogflowResponse } from "../utils/
 import { capitalizeFirstLetter, generateDialogflowResponse, getBookingDateAndtime } from "../utils/utils"
 import { addWaitingList } from "../utils/firebaseFunctions"
 import { ERROR_MESSAGE } from "../config/constants"
+import { getMessage } from "../utils/dynamicMessages"
+import { MessageKeys } from "../data/messagesKey"
 
 export const addToWaitingList = async (detectIntentResponse: DetectIntentResponse): Promise<DialogflowResponse> => {
     try {
@@ -44,11 +46,15 @@ export const addToWaitingList = async (detectIntentResponse: DetectIntentRespons
         console.log(newWaitingListInfo.id)
         if (newWaitingListInfo.status) {
             return generateDialogflowResponse(
-                ["WaitingList saved."]
+                [
+                    getMessage(detectIntentResponse.languageCode, MessageKeys.WAITING_LIST_SAVED, {})
+                ]
             )
         } else {
             return generateDialogflowResponse(
-                ["WaitingList not saved."]
+                [
+                    getMessage(detectIntentResponse.languageCode, MessageKeys.WAITING_LIST_NOT_SAVED, { errorReason: ERROR_MESSAGE })
+                ]
             )
         }
     } catch (error) {

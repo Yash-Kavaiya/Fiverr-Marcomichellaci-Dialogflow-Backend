@@ -2,6 +2,8 @@ import { DetectIntentResponse, DialogflowResponse, WeeklyOperatingHours, Slot } 
 import { ERROR_MESSAGE, BOOKING_STATUS } from "../config/constants"
 import { findAvailabilityByRestaurantPhoneAndDate, findBookingByCustomerDateAndBookingStatus, findRestaurantByPhone } from "../utils/firebaseFunctions"
 import { generateDialogflowResponse, getBookingDateAndtime, isTimeWithinRange } from "../utils/utils"
+import { getMessage } from "../utils/dynamicMessages"
+import { MessageKeys } from "../data/messagesKey"
 
 export const checkAvailableTables = async (detectIntentResponse: DetectIntentResponse): Promise<DialogflowResponse> => {
     try {
@@ -47,11 +49,11 @@ export const checkAvailableTables = async (detectIntentResponse: DetectIntentRes
             const { data: restaurantData } = restaurant
 
             // 1. Check for holiday
-            const isHoliday = restaurantData.holidays.some(holiday => holiday.date === bookingDate)
-            if (isHoliday) {
+            const holiday = restaurantData.holidays.find(holiday => holiday.date === bookingDate)
+            if (holiday) {
                 return generateDialogflowResponse(
                     [
-                        "There is no slot available for reservation today beacuase of a holiday."
+                        getMessage(detectIntentResponse.languageCode, MessageKeys.NO_RESERVATION_HOLIDAY, { holidayReason: holiday.reason })
                     ],
                     {
                         session: session,
@@ -69,9 +71,7 @@ export const checkAvailableTables = async (detectIntentResponse: DetectIntentRes
             if (specialEvent) {
                 return generateDialogflowResponse(
                     [
-                        "There is no slot available for reservation today beacuase of a special event.",
-                        `Event name: ${specialEvent.name}, date: ${specialEvent.date} and description: ${specialEvent.description}.`,
-                        `You can book directly from our website: ${restaurantData.websiteUrl} or be called back by one of our operators. Do you want to be called back?`
+                        getMessage(detectIntentResponse.languageCode, MessageKeys.NO_RESERVATION_SPECIAL_EVENT, { specialEventName: specialEvent.name, specialEventDescription: specialEvent.description, websiteUrl: restaurantData.websiteUrl })
                     ],
                     {
                         session: session,
@@ -87,7 +87,7 @@ export const checkAvailableTables = async (detectIntentResponse: DetectIntentRes
             if (!operatingHours) {
                 return generateDialogflowResponse(
                     [
-                        `Restaurant is not available for reservation at ${bookingTime} on ${bookingDate}.`
+                        getMessage(detectIntentResponse.languageCode, MessageKeys.NO_RESERVATION_OUT_OF_WORKING_HOURS, { bookingDate: bookingDate, bookingTime: bookingTime })
                     ],
                     {
                         session: session,
@@ -104,7 +104,7 @@ export const checkAvailableTables = async (detectIntentResponse: DetectIntentRes
             if (!availability) {
                 return generateDialogflowResponse(
                     [
-                        `Restaurant is not available for reservation at ${bookingTime} on ${bookingDate}.`
+                        getMessage(detectIntentResponse.languageCode, MessageKeys.NO_RESERVATION_NO_AVAILABILITY, { bookingDate: bookingDate, bookingTime: bookingTime })
                     ],
                     {
                         session: session,
@@ -131,7 +131,7 @@ export const checkAvailableTables = async (detectIntentResponse: DetectIntentRes
                 if (!isTimeWithinRange(bookingTime, bookingStartTime, bookingEndTime)) {
                     return generateDialogflowResponse(
                         [
-                            `Booking is only available between ${bookingStartTime} and ${bookingEndTime}.`
+                            getMessage(detectIntentResponse.languageCode, MessageKeys.NO_RESERVATION_OUT_OF_BOOKING_WINDOW, { bookingDate: bookingDate, bookingTime: bookingTime, bookingEndTime: bookingEndTime, bookingStartTime: bookingStartTime })
                         ],
                         {
                             session: session,
@@ -145,7 +145,7 @@ export const checkAvailableTables = async (detectIntentResponse: DetectIntentRes
                 if ((availableSeats - alreadyBookedSeats) < partySize) {
                     return generateDialogflowResponse(
                         [
-                            `Not enough seats avaialable for the date ${bookingDate} at ${bookingTime}.`
+                            getMessage(detectIntentResponse.languageCode, MessageKeys.NO_RESERVATION_NO_SEAT, { bookingDate: bookingDate, bookingTime: bookingTime })
                         ],
                         {
                             session: session,
@@ -196,7 +196,9 @@ export const checkAvailableTables = async (detectIntentResponse: DetectIntentRes
                 const allSlots = availabilityData.lunch.timeSlots.concat(availabilityData.dinner.timeSlots).map(slot => slot)
 
                 return generateDialogflowResponse(
-                    [`Not enough seats avaialable for the date ${bookingDate} at ${bookingTime}.`,],
+                    [
+                        getMessage(detectIntentResponse.languageCode, MessageKeys.NO_RESERVATION_NO_SEAT, { bookingDate: bookingDate, bookingTime: bookingTime })
+                    ],
                     {
                         session: session,
                         parameters: {
@@ -222,7 +224,9 @@ export const checkAvailableTables = async (detectIntentResponse: DetectIntentRes
         } else {
             console.error('Restaurant not found in Firestore.')
             return generateDialogflowResponse(
-                ['The restaurant is closed at this point for unknown reasons.']
+                [
+                    getMessage(detectIntentResponse.languageCode, MessageKeys.RESTAURANT_CLOSED, {})
+                ]
             )
         }
     } catch (error) {

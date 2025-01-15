@@ -2,6 +2,8 @@ import { DetectIntentResponse, DialogflowResponse } from "../utils/types"
 import { generateDialogflowResponse } from "../utils/utils"
 import { findBookingByCustomerPhone } from "../utils/firebaseFunctions"
 import { BOOKING_FOUND, ERROR_MESSAGE } from "../config/constants"
+import { MessageKeys } from "../data/messagesKey"
+import { getMessage } from "../utils/dynamicMessages"
 
 export const getBookingFromPhone = async (detectIntentResponse: DetectIntentResponse): Promise<DialogflowResponse> => {
     try {
@@ -19,7 +21,9 @@ export const getBookingFromPhone = async (detectIntentResponse: DetectIntentResp
         if (bookings) {
             if (bookings.data.length > 1) {
                 return generateDialogflowResponse(
-                    [`The booking with the phone number ${parameters.customer_phone} found.`],
+                    [
+                        getMessage(detectIntentResponse.languageCode, MessageKeys.BOOKING_FOUND_W_PHONE, { customerPhone: parameters.customer_phone })
+                    ],
                     {
                         session: detectIntentResponse.sessionInfo.session,
                         parameters: {
@@ -31,7 +35,9 @@ export const getBookingFromPhone = async (detectIntentResponse: DetectIntentResp
                 )
             } else {
                 return generateDialogflowResponse(
-                    [`The booking with the phone number ${parameters.customer_phone} found.`],
+                    [
+                        getMessage(detectIntentResponse.languageCode, MessageKeys.BOOKING_FOUND_W_PHONE, { customerPhone: parameters.customer_phone })
+                    ],
                     {
                         session: detectIntentResponse.sessionInfo.session,
                         parameters: {
@@ -44,7 +50,9 @@ export const getBookingFromPhone = async (detectIntentResponse: DetectIntentResp
             }
         } else {
             return generateDialogflowResponse(
-                [`The booking with the phone number ${parameters.customer_phone} not found.`],
+                [
+                    getMessage(detectIntentResponse.languageCode, MessageKeys.BOOKING_NOT_FOUND_W_PHONE, { customerPhone: parameters.customer_phone })
+                ],
                 {
                     session: detectIntentResponse.sessionInfo.session,
                     parameters: {

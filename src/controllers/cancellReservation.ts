@@ -2,6 +2,8 @@ import { ERROR_MESSAGE } from "../config/constants";
 import { Bookings, DetectIntentResponse, DialogflowResponse } from "../utils/types";
 import { generateDialogflowResponse } from "../utils/utils";
 import { updateBookingProperties } from "../utils/firebaseFunctions";
+import { getMessage } from "../utils/dynamicMessages";
+import { MessageKeys } from "../data/messagesKey";
 
 export const cancellReservation = async (detectIntentResponse: DetectIntentResponse): Promise<DialogflowResponse> => {
     try {
@@ -20,11 +22,15 @@ export const cancellReservation = async (detectIntentResponse: DetectIntentRespo
             console.log(bookingId)
             if (flag) {
                 return generateDialogflowResponse(
-                    ["Booking cancelled."]
+                    [
+                        getMessage(detectIntentResponse.languageCode, MessageKeys.BOOKING_CANCELLED, {})
+                    ]
                 )
             } else {
                 return generateDialogflowResponse(
-                    ["Booking cancellation failed."]
+                    [
+                        getMessage(detectIntentResponse.languageCode, MessageKeys.BOOKING_NOT_CANCELLED, { errorReason: ERROR_MESSAGE })
+                    ]
                 )
             }
         } else {
