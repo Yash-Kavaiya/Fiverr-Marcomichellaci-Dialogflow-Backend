@@ -3,7 +3,7 @@ import dotenv from "dotenv"
 dotenv.config()
 
 import homeRoute from "./routes/homeRoute"
-import dialogflowRout from "./routes/dialogflowRoute"
+import dialogflowRoute from "./routes/dialogflowRoute"
 import { apiKeyMiddleware } from "./utils/middleware"
 
 const app = express()
@@ -18,7 +18,7 @@ app.use((request: Request, response: Response, next: NextFunction) => {
 })
 
 app.use("/", homeRoute)
-app.use("/dialogflow", dialogflowRout)
+app.use("/dialogflow", dialogflowRoute)
 
 app.listen(PORT, () => {
     console.log(`Server running at: http://127.0.0.1:${PORT}`)
