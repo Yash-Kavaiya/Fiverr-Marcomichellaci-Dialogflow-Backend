@@ -32,7 +32,9 @@ export const defaultWelcomeIntent = async (detectIntentResponse: DetectIntentRes
         } else {
             console.error(`Unable find the restaurant by the phone: ${parameters.restaurantNumber}`)
             return generateDialogflowResponse(
-                ["The restaurant is Closed at this point for unknown reasons."]
+                [
+                    getMessage(detectIntentResponse.languageCode, MessageKeys.RESTAURANT_CLOSED, {})
+                ]
             )
         }
     } catch (error) {
