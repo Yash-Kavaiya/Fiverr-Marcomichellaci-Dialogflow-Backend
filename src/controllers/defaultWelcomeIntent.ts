@@ -2,6 +2,8 @@ import { DetectIntentResponse, DialogflowResponse } from "../utils/types"
 import { generateDialogflowResponse } from "../utils/utils"
 import { findRestaurantByPhone } from "../utils/firebaseFunctions"
 import { ERROR_MESSAGE } from "../config/constants"
+import { MessageKeys } from "../data/messagesKey"
+import { getMessage } from "../utils/dynamicMessages"
 
 export const defaultWelcomeIntent = async (detectIntentResponse: DetectIntentResponse): Promise<DialogflowResponse> => {
     try {
@@ -16,7 +18,9 @@ export const defaultWelcomeIntent = async (detectIntentResponse: DetectIntentRes
         if (restaurant) {
             const { id: restaurantId, data: restaurantData } = restaurant
             return generateDialogflowResponse(
-                [`Welcome to ${restaurantData.name}, how can I help you today?`],
+                [
+                    getMessage(detectIntentResponse.languageCode, MessageKeys.WELCOME_MESSAGE, { restaurantName: restaurantData.name })
+                ],
                 {
                     session: session,
                     parameters: {

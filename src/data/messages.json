@@ -1,0 +1,12 @@
+{
+    "en": {
+        "WELCOME_MESSAGE": "Welcome to ${restaurantName}, how can I help you today?",
+        "BOOKING_SAVED": "Your reservation number is ${reservationNumber}.",
+        "BOOKING_NOT_SAVED": "Booking not saved. Error: {errorReason}"
+    },
+    "it": {
+        "WELCOME_MESSAGE": "Benvenuto su ${restaurantName}, come posso aiutarti oggi?",
+        "BOOKING_SAVED": "Il tuo numero di prenotazione è ${reservationNumber}.",
+        "BOOKING_NOT_SAVED": "Prenotazione non salvata. Errore: {errorReason}"
+    }
+}

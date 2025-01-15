@@ -70,7 +70,8 @@ export const checkAvailableTables = async (detectIntentResponse: DetectIntentRes
                 return generateDialogflowResponse(
                     [
                         "There is no slot available for reservation today beacuase of a special event.",
-                        `Event name: ${specialEvent.name}, date: ${specialEvent.date} and description: ${specialEvent.description}.`
+                        `Event name: ${specialEvent.name}, date: ${specialEvent.date} and description: ${specialEvent.description}.`,
+                        `You can book directly from our website: ${restaurantData.websiteUrl} or be called back by one of our operators. Do you want to be called back?`
                     ],
                     {
                         session: session,

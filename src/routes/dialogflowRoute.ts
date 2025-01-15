@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express"
 import { generateDialogflowResponse } from "../utils/utils"
-import { addToBookings, addToCallback, addToWaitingList, cancellReservation, checkAvailableTables, checkWorkingHours, defaultWelcomeIntent, getBookingFromPhone, getFutureHolidays, getReservationFromParameter, invalidateBookingDate, updateBooking } from "../controllers"
+import { addToBookings, addToCallback, addToWaitingList, cancellReservation, checkAvailableTables, checkWorkingHours, defaultWelcomeIntent, formatBookings, getBookingFromPhone, getFutureHolidays, getReservationFromParameter, invalidateBookingDate, updateBooking } from "../controllers"
 import { ERROR_MESSAGE } from "../config/constants"
 import { DetectIntentResponse } from "../utils/types"
 
@@ -47,8 +47,16 @@ router.post("/webhook", async (request: Request, response: Response) => {
             responseData = cancellReservation(detectIntentResponse)
         } else if (tag === "updateBooking") {
             responseData = await updateBooking(detectIntentResponse)
-        }
-        else {
+        } else if (tag === "formatBookings") {
+            const tempData = formatBookings(detectIntentResponse)
+            if (tempData !== null) {
+                responseData = tempData
+            } else {
+                responseData = generateDialogflowResponse(
+                    [ERROR_MESSAGE]
+                )
+            }
+        } else {
             responseData = generateDialogflowResponse(
                 [`No handler for the tag ${tag}.`]
             )

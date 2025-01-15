@@ -2,6 +2,8 @@ import { Bookings, DetectIntentResponse, DialogflowResponse } from "../utils/typ
 import { calculateStartAndEndTime, capitalizeFirstLetter, generateDialogflowResponse, getBookingDateAndtime, getFiveUniqueRandomNumbers } from "../utils/utils"
 import { addBookings } from "../utils/firebaseFunctions"
 import { ERROR_MESSAGE } from "../config/constants"
+import { getMessage } from "../utils/dynamicMessages"
+import { MessageKeys } from "../data/messagesKey"
 
 export const addToBookings = async (detectIntentResponse: DetectIntentResponse): Promise<DialogflowResponse> => {
     try {
@@ -57,11 +59,15 @@ export const addToBookings = async (detectIntentResponse: DetectIntentResponse):
         console.log(newBookingInfo.id)
         if (newBookingInfo.status) {
             return generateDialogflowResponse(
-                ["Booking saved.", `Your reservation number is ${reservationNumber}.`]
+                [
+                    getMessage(detectIntentResponse.languageCode, MessageKeys.BOOKING_SAVED, { reservationNumber: reservationNumber })
+                ]
             )
         } else {
             return generateDialogflowResponse(
-                ["Booking not saved."]
+                [
+                    getMessage(detectIntentResponse.languageCode, MessageKeys.BOOKING_NOT_SAVED, { errorReason: ERROR_MESSAGE })
+                ]
             )
         }
     } catch (error) {

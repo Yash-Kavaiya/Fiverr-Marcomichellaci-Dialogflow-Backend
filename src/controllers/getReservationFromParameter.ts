@@ -4,6 +4,7 @@ import { findBookingByCustomerDate, findBookingByCustomerEmail, findBookingByCus
 import { ERROR_MESSAGE } from "../config/constants"
 
 export const getReservationFromParameter = async (detectIntentResponse: DetectIntentResponse): Promise<DialogflowResponse | null> => {
+    console.log(detectIntentResponse)
     try {
         const parameters = detectIntentResponse.sessionInfo.parameters
         if (parameters == null) {
