@@ -4,7 +4,7 @@ import { ERROR_MESSAGE, TIMEZONE } from "../config/constants"
 import { findRestaurantByPhone } from "../utils/firebaseFunctions"
 import { generateDialogflowResponse } from "../utils/utils"
 import { DetectIntentResponse, DialogflowResponse } from "../utils/types"
-import { MessageKeys } from "../data/messagesKey"
+import { MessageKeys } from "../utils/messagesKey"
 import { getMessage } from "../utils/dynamicMessages"
 
 export const getFutureHolidays = async (detectIntentResponse: DetectIntentResponse): Promise<DialogflowResponse> => {

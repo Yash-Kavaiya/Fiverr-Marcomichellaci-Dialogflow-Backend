@@ -3,7 +3,7 @@ import { Bookings, DetectIntentResponse, DialogflowResponse } from "../utils/typ
 import { generateDialogflowResponse } from "../utils/utils";
 import { updateBookingProperties } from "../utils/firebaseFunctions";
 import { getMessage } from "../utils/dynamicMessages";
-import { MessageKeys } from "../data/messagesKey";
+import { MessageKeys } from "../utils/messagesKey";
 
 export const cancellReservation = async (detectIntentResponse: DetectIntentResponse): Promise<DialogflowResponse> => {
     try {

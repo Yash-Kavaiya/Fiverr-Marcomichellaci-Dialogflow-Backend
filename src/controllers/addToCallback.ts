@@ -2,7 +2,7 @@ import { Callback, DetectIntentResponse, DialogflowResponse } from "../utils/typ
 import { capitalizeFirstLetter, generateDialogflowResponse } from "../utils/utils"
 import { addCallback } from "../utils/firebaseFunctions"
 import { ERROR_MESSAGE } from "../config/constants"
-import { MessageKeys } from "../data/messagesKey"
+import { MessageKeys } from "../utils/messagesKey"
 import { getMessage } from "../utils/dynamicMessages"
 
 export const addToCallback = async (detectIntentResponse: DetectIntentResponse): Promise<DialogflowResponse> => {
@@ -18,7 +18,7 @@ export const addToCallback = async (detectIntentResponse: DetectIntentResponse):
             callbackTime: parameters.callback_time,
             name: capitalizeFirstLetter(parameters.callback_name.name),
             phone: parameters.callback_phone,
-            reason: parameters.callback_reason,
+            reason: parameters.callback_reason || "Direct inquiry.",
             status: "pending",
         }
         const newCallbackInfo = await addCallback({ callback: newCallback, restaurantId: parameters.restaurantId })

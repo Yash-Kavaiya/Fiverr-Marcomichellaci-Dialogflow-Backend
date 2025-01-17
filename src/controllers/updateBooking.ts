@@ -2,7 +2,7 @@ import { Bookings, DetectIntentResponse, DialogflowResponse } from "../utils/typ
 import { calculateStartAndEndTime, capitalizeFirstLetter, generateDialogflowResponse, getBookingDateAndtime, getFiveUniqueRandomNumbers } from "../utils/utils"
 import { updateBookingProperties } from "../utils/firebaseFunctions"
 import { ERROR_MESSAGE } from "../config/constants"
-import { MessageKeys } from "../data/messagesKey"
+import { MessageKeys } from "../utils/messagesKey"
 import { getMessage } from "../utils/dynamicMessages"
 
 export const updateBooking = async (detectIntentResponse: DetectIntentResponse): Promise<DialogflowResponse> => {

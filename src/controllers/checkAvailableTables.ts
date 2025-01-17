@@ -3,7 +3,7 @@ import { ERROR_MESSAGE, BOOKING_STATUS } from "../config/constants"
 import { findAvailabilityByRestaurantPhoneAndDate, findBookingByCustomerDateAndBookingStatus, findRestaurantByPhone } from "../utils/firebaseFunctions"
 import { generateDialogflowResponse, getBookingDateAndtime, isTimeWithinRange } from "../utils/utils"
 import { getMessage } from "../utils/dynamicMessages"
-import { MessageKeys } from "../data/messagesKey"
+import { MessageKeys } from "../utils/messagesKey"
 
 export const checkAvailableTables = async (detectIntentResponse: DetectIntentResponse): Promise<DialogflowResponse> => {
     try {

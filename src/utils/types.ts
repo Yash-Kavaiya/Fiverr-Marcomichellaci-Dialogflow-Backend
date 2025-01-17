@@ -158,9 +158,8 @@ export interface Bookings {
     duration: string
     endTime: string
     partySize: number
-    specialRequests: {
-        [key: string]: string
-    }
+    allergyTableRequests: string,
+    additionalRequests: string,
     startTime: string
     status: "pending" | "confirmed" | "cancelled"
 }

@@ -1,10 +1,10 @@
 import fs from "fs"
 import path from "path"
-import { MessageKeys, messageVariableMap, MessageVariables } from "../data/messagesKey"
+import { MessageKeys, messageVariableMap, MessageVariables } from "./messagesKey"
 
 type LanguageCode = "en" | "es" | string
 
-const messagesPath = path.resolve(__dirname, "../data/messages.json")
+const messagesPath = path.resolve(__dirname, "../../data/messages.json")
 const messages = JSON.parse(fs.readFileSync(messagesPath, "utf-8"))
 
 /**

@@ -3,7 +3,7 @@ import { compareAsc } from "date-fns"
 import { DetectIntentResponse, DialogflowResponse } from "../utils/types"
 import { generateDialogflowResponse } from "../utils/utils"
 import { ERROR_MESSAGE } from "../config/constants"
-import { MessageKeys } from "../data/messagesKey"
+import { MessageKeys } from "../utils/messagesKey"
 import { getMessage } from "../utils/dynamicMessages"
 
 export const invalidateBookingDate = async (detectIntentResponse: DetectIntentResponse): Promise<DialogflowResponse | null> => {

@@ -3,11 +3,12 @@ import { calculateStartAndEndTime, capitalizeFirstLetter, generateDialogflowResp
 import { addBookings } from "../utils/firebaseFunctions"
 import { ERROR_MESSAGE } from "../config/constants"
 import { getMessage } from "../utils/dynamicMessages"
-import { MessageKeys } from "../data/messagesKey"
+import { MessageKeys } from "../utils/messagesKey"
 
 export const addToBookings = async (detectIntentResponse: DetectIntentResponse): Promise<DialogflowResponse> => {
     try {
         const parameters = detectIntentResponse.sessionInfo.parameters
+        console.log(parameters)
         if (parameters == null) {
             return generateDialogflowResponse(
                 [ERROR_MESSAGE]
@@ -51,7 +52,8 @@ export const addToBookings = async (detectIntentResponse: DetectIntentResponse):
             duration: parameters.duration,
             partySize: 4,
             endTime: endTime,
-            specialRequests: parameters.special_needs || "No special needs.",
+            allergyTableRequests: parameters.allergy_table_needs || "No allergy and noe specific table needs.",
+            additionalRequests: parameters.additional_needs || "No additional needs.",
             startTime: startTime,
             status: "pending"
         }

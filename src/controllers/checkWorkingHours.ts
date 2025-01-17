@@ -1,5 +1,5 @@
 import { ERROR_MESSAGE, TIMEZONE } from "../config/constants"
-import { MessageKeys } from "../data/messagesKey"
+import { MessageKeys } from "../utils/messagesKey"
 import { getMessage } from "../utils/dynamicMessages"
 import { findRestaurantByPhone } from "../utils/firebaseFunctions"
 import { DetectIntentResponse, DialogflowResponse, WeeklyOperatingHours } from "../utils/types"

@@ -10,7 +10,7 @@
         "BOOKING_CANCELLED": "Booking cancelled.",
         "BOOKING_NOT_CANCELLED": "Booking cancellation failed. Error: {errorReason}",
         "NO_RESERVATION_HOLIDAY": "There is no slot available for reservation today beacuase of ${holidayReason}.",
-        "NO_RESERVATION_SPECIAL_EVENT": "There is no space available for your reservation today due to the special event ${specialEventName} with a special menu featuring ${specialEventDescription}. You can book directly from our website: ${websiteUrl} or be called back by one of our operators. Do you want to be called back?",
+        "NO_RESERVATION_SPECIAL_EVENT": "There is no space available for your reservation due to the special event ${specialEventName} with a special menu featuring ${specialEventDescription}. You can book directly from our website: ${websiteUrl} or be called back by one of our operators. Do you want to be called back?",
         "NO_RESERVATION_OUT_OF_WORKING_HOURS": "Restaurant is not available for reservation at ${bookingTime} on ${bookingDate} becasue the requested time is out of service hours.",
         "NO_RESERVATION_NO_AVAILABILITY": "Restaurant is not available for reservation at ${bookingTime} on ${bookingDate} because there is no availability of seats.",
         "NO_RESERVATION_OUT_OF_BOOKING_WINDOW": "Restaurant is not available for reservation at ${bookingTime} on ${bookingDate} becasue the requested time is out of service hours. Booking is only available between ${bookingStartTime} and ${bookingEndTime}.",

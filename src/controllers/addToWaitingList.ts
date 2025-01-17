@@ -3,7 +3,7 @@ import { capitalizeFirstLetter, generateDialogflowResponse, getBookingDateAndtim
 import { addWaitingList } from "../utils/firebaseFunctions"
 import { ERROR_MESSAGE } from "../config/constants"
 import { getMessage } from "../utils/dynamicMessages"
-import { MessageKeys } from "../data/messagesKey"
+import { MessageKeys } from "../utils/messagesKey"
 
 export const addToWaitingList = async (detectIntentResponse: DetectIntentResponse): Promise<DialogflowResponse> => {
     try {
