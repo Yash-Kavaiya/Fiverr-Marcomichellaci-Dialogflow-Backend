@@ -5,7 +5,7 @@ import { ERROR_MESSAGE } from "../config/constants"
 import { MessageKeys } from "../utils/messagesKey"
 import { getMessage } from "../utils/dynamicMessages"
 
-export const addToCallback = async (detectIntentResponse: DetectIntentResponse): Promise<DialogflowResponse> => {
+export const addToCallback = async (detectIntentResponse: DetectIntentResponse): Promise<DialogflowResponse | null> => {
     try {
         const parameters = detectIntentResponse.sessionInfo.parameters
         if (parameters == null) {
@@ -24,11 +24,7 @@ export const addToCallback = async (detectIntentResponse: DetectIntentResponse):
         const newCallbackInfo = await addCallback({ callback: newCallback, restaurantId: parameters.restaurantId })
         console.log(newCallbackInfo.id)
         if (newCallbackInfo.status) {
-            return generateDialogflowResponse(
-                [
-                    getMessage(detectIntentResponse.languageCode, MessageKeys.CALLBACK_SAVED, {})
-                ]
-            )
+            return null
         } else {
             return generateDialogflowResponse(
                 [

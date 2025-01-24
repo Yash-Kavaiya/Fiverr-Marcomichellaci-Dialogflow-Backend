@@ -5,7 +5,7 @@ import { updateBookingProperties } from "../utils/firebaseFunctions";
 import { getMessage } from "../utils/dynamicMessages";
 import { MessageKeys } from "../utils/messagesKey";
 
-export const cancellReservation = async (detectIntentResponse: DetectIntentResponse): Promise<DialogflowResponse> => {
+export const cancellReservation = async (detectIntentResponse: DetectIntentResponse): Promise<DialogflowResponse | null> => {
     try {
         const parameters = detectIntentResponse.sessionInfo.parameters
         if (parameters == null) {
@@ -21,11 +21,7 @@ export const cancellReservation = async (detectIntentResponse: DetectIntentRespo
             const flag = await updateBookingProperties({ bookingId: bookingId, restaurantId: parameters.restaurantId, updates: bookingUpdate })
             console.log(bookingId)
             if (flag) {
-                return generateDialogflowResponse(
-                    [
-                        getMessage(detectIntentResponse.languageCode, MessageKeys.BOOKING_CANCELLED, {})
-                    ]
-                )
+                return null
             } else {
                 return generateDialogflowResponse(
                     [

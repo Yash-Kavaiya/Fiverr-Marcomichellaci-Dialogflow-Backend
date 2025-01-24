@@ -5,7 +5,7 @@ import { ERROR_MESSAGE } from "../config/constants"
 import { getMessage } from "../utils/dynamicMessages"
 import { MessageKeys } from "../utils/messagesKey"
 
-export const addToWaitingList = async (detectIntentResponse: DetectIntentResponse): Promise<DialogflowResponse> => {
+export const addToWaitingList = async (detectIntentResponse: DetectIntentResponse): Promise<DialogflowResponse | null> => {
     try {
         const parameters = detectIntentResponse.sessionInfo.parameters
         if (parameters == null) {
@@ -45,11 +45,7 @@ export const addToWaitingList = async (detectIntentResponse: DetectIntentRespons
         const newWaitingListInfo = await addWaitingList({ waitingList: newWaitingList, restaurantId: parameters.restaurantId })
         console.log(newWaitingListInfo.id)
         if (newWaitingListInfo.status) {
-            return generateDialogflowResponse(
-                [
-                    getMessage(detectIntentResponse.languageCode, MessageKeys.WAITING_LIST_SAVED, {})
-                ]
-            )
+            return null
         } else {
             return generateDialogflowResponse(
                 [

@@ -27,9 +27,23 @@ router.post("/webhook", async (request: Request, response: Response) => {
         } else if (tag === 'addToBookings') {
             responseData = await addToBookings(detectIntentResponse)
         } else if (tag === 'addToWaitingList') {
-            responseData = await addToWaitingList(detectIntentResponse)
+            const tempData = await addToWaitingList(detectIntentResponse)
+            if (tempData !== null) {
+                responseData = tempData
+            } else {
+                responseData = generateDialogflowResponse(
+                    [ERROR_MESSAGE]
+                )
+            }
         } else if (tag == 'addToCallback') {
-            responseData = await addToCallback(detectIntentResponse)
+            const tempData = await addToCallback(detectIntentResponse)
+            if (tempData !== null) {
+                responseData = tempData
+            } else {
+                responseData = generateDialogflowResponse(
+                    [ERROR_MESSAGE]
+                )
+            }
         } else if (tag === "getBookingFromPhone") {
             responseData = await getBookingFromPhone(detectIntentResponse)
         } else if (tag === "invalidateBookingDate") {
@@ -46,7 +60,14 @@ router.post("/webhook", async (request: Request, response: Response) => {
         } else if (tag === "cancellReservation") {
             responseData = cancellReservation(detectIntentResponse)
         } else if (tag === "updateBooking") {
-            responseData = await updateBooking(detectIntentResponse)
+            const tempData = await updateBooking(detectIntentResponse)
+            if (tempData !== null) {
+                responseData = tempData
+            } else {
+                responseData = generateDialogflowResponse(
+                    [ERROR_MESSAGE]
+                )
+            }
         } else if (tag === "formatBookings") {
             const tempData = formatBookings(detectIntentResponse)
             if (tempData !== null) {

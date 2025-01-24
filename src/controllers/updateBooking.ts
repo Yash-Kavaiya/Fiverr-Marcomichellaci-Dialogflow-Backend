@@ -1,11 +1,11 @@
 import { Bookings, DetectIntentResponse, DialogflowResponse } from "../utils/types"
-import { calculateStartAndEndTime, capitalizeFirstLetter, generateDialogflowResponse, getBookingDateAndtime, getFiveUniqueRandomNumbers } from "../utils/utils"
+import { calculateStartAndEndTime, generateDialogflowResponse, getBookingDateAndtime } from "../utils/utils"
 import { updateBookingProperties } from "../utils/firebaseFunctions"
 import { ERROR_MESSAGE } from "../config/constants"
 import { MessageKeys } from "../utils/messagesKey"
 import { getMessage } from "../utils/dynamicMessages"
 
-export const updateBooking = async (detectIntentResponse: DetectIntentResponse): Promise<DialogflowResponse> => {
+export const updateBooking = async (detectIntentResponse: DetectIntentResponse): Promise<DialogflowResponse | null> => {
     try {
         const parameters = detectIntentResponse.sessionInfo.parameters
         if (parameters == null) {
@@ -42,11 +42,7 @@ export const updateBooking = async (detectIntentResponse: DetectIntentResponse):
         const updatedBookingInfo = await updateBookingProperties({ updates: bookingUpdates, bookingId: bookingId, restaurantId: parameters.restaurantId })
         console.log(updatedBookingInfo.id)
         if (updatedBookingInfo.status) {
-            return generateDialogflowResponse(
-                [
-                    getMessage(detectIntentResponse.languageCode, MessageKeys.BOOKING_UPDATED, {})
-                ]
-            )
+            return null
         } else {
             return generateDialogflowResponse(
                 [

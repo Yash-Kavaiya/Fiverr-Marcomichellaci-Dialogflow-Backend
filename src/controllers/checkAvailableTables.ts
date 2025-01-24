@@ -100,7 +100,6 @@ export const checkAvailableTables = async (detectIntentResponse: DetectIntentRes
 
             // 4. Get availability for the date
             const availability = await findAvailabilityByRestaurantPhoneAndDate({ restaurantNumber: restaurantNumber, date: bookingDate })
-            console.log(availability?.id)
             if (!availability) {
                 return generateDialogflowResponse(
                     [
@@ -114,7 +113,9 @@ export const checkAvailableTables = async (detectIntentResponse: DetectIntentRes
                     }
                 )
             }
-            const { data: availabilityData } = availability
+            const { data: availabilityData, id: availabilityId } = availability
+            console.log(`Availability id: ${availabilityId}`)
+            console.log(`Availability data: ${JSON.stringify(availabilityData)}`)
 
             // Get the existing bookings for the booking date
             const existingBookings = await findBookingByCustomerDateAndBookingStatus({ date: bookingDate, restaurantId: restaurantId, status: "confirmed" })
