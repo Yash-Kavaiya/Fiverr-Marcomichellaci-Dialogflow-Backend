@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express"
 import { generateDialogflowResponse } from "../utils/utils"
-import { addToBookings, addToCallback, addToWaitingList, cancellReservation, checkAvailableTables, checkWorkingHours, defaultWelcomeIntent, formatBookingOptions, formatCancellationConfirmation, getBookingFromPhone, getFutureHolidays, getReservationFromParameter, invalidateBookingDate, updateBooking } from "../controllers"
+import { addToBookings, addToCallback, addToWaitingList, cancellReservation, checkAvailableTables, checkWorkingHours, defaultWelcomeIntent, formatBookingOptions, formatCancellationConfirmation, formatReservationFetchParameterResponse, getBookingFromPhone, getFutureHolidays, getReservationFromParameter, invalidateBookingDate, updateBooking } from "../controllers"
 import { ERROR_MESSAGE } from "../config/constants"
 import { DetectIntentResponse } from "../utils/types"
 
@@ -16,19 +16,19 @@ router.post("/webhook", async (request: Request, response: Response) => {
         const detectIntentResponse = request.body as DetectIntentResponse
         const tag = detectIntentResponse.fulfillmentInfo.tag
         console.log(`Tag: ${tag}`)
-        if (tag === "defaultWelcomeIntent") {
+        if (tag == "defaultWelcomeIntent") {
             responseData = await defaultWelcomeIntent(detectIntentResponse)
-        } else if (tag === "checkWorkingHours") {
+        } else if (tag == "checkWorkingHours") {
             responseData = await checkWorkingHours(detectIntentResponse)
-        } else if (tag === "getFutureHolidays") {
+        } else if (tag == "getFutureHolidays") {
             responseData = await getFutureHolidays(detectIntentResponse)
-        } else if (tag === "checkAvailableTables") {
+        } else if (tag == "checkAvailableTables") {
             responseData = await checkAvailableTables(detectIntentResponse)
-        } else if (tag === 'addToBookings') {
+        } else if (tag == 'addToBookings') {
             responseData = await addToBookings(detectIntentResponse)
-        } else if (tag === 'addToWaitingList') {
+        } else if (tag == 'addToWaitingList') {
             const tempData = await addToWaitingList(detectIntentResponse)
-            if (tempData !== null) {
+            if (tempData != null) {
                 responseData = tempData
             } else {
                 responseData = generateDialogflowResponse(
@@ -37,50 +37,51 @@ router.post("/webhook", async (request: Request, response: Response) => {
             }
         } else if (tag == 'addToCallback') {
             const tempData = await addToCallback(detectIntentResponse)
-            if (tempData !== null) {
+            if (tempData != null) {
                 responseData = tempData
             } else {
                 responseData = generateDialogflowResponse(
                     [ERROR_MESSAGE]
                 )
             }
-        } else if (tag === "getBookingFromPhone") {
+        } else if (tag == "getBookingFromPhone") {
             responseData = await getBookingFromPhone(detectIntentResponse)
-        } else if (tag === "invalidateBookingDate") {
+        } else if (tag == "invalidateBookingDate") {
             responseData = invalidateBookingDate(detectIntentResponse)
-        } else if (tag === "getReservationFromParameter") {
+        } else if (tag == "getReservationFromParameter") {
             const tempData = await getReservationFromParameter(detectIntentResponse)
-            if (tempData !== null) {
+            if (tempData != null) {
                 responseData = tempData
             } else {
                 responseData = generateDialogflowResponse(
                     [ERROR_MESSAGE]
                 )
             }
-        } else if (tag === "cancellReservation") {
+        } else if (tag == "cancellReservation") {
             responseData = cancellReservation(detectIntentResponse)
-        } else if (tag === "updateBooking") {
+        } else if (tag == "updateBooking") {
             const tempData = await updateBooking(detectIntentResponse)
-            if (tempData !== null) {
+            if (tempData != null) {
                 responseData = tempData
             } else {
                 responseData = generateDialogflowResponse(
                     [ERROR_MESSAGE]
                 )
             }
-        } else if (tag === "formatBookingOptions") {
+        } else if (tag == "formatBookingOptions") {
             const tempData = formatBookingOptions(detectIntentResponse)
-            if (tempData !== null) {
+            if (tempData != null) {
                 responseData = tempData
             } else {
                 responseData = generateDialogflowResponse(
                     [ERROR_MESSAGE]
                 )
             }
-        } else if (tag === "formatCancellationConfirmation") {
+        } else if (tag == "formatCancellationConfirmation") {
             responseData = formatCancellationConfirmation(detectIntentResponse)
-        }
-        else {
+        } else if (tag == "formatReservationFetchParameterResponse") {
+            responseData = formatReservationFetchParameterResponse(detectIntentResponse)
+        } else {
             responseData = generateDialogflowResponse(
                 [`No handler for the tag ${tag}.`]
             )

@@ -32,7 +32,11 @@
         "BOOKING_FOUND_W_RESERVATION_NUMBER": "I found your reservation with the number ${reservation_number}. ",
         "BOOKING_NOT_FOUND_W_RESERVATION_NUMBER": "Unfortunately, I could not find the reservation with the number ${reservationNumber}.",
         "FORMAT_BOOKING_CANCELLATION_MODIFICATION": "Here are the options we found for your booking: ${formattedBookingOptions}, select only the one that has your information.",
-        "CANCELLATION_CONFIRMATION": "Your reservation is for ${partySize} people on ${bookingDate} at ${startTime}. Do you want to confirm the cancellation?"
+        "CANCELLATION_CONFIRMATION": "Your reservation is for ${partySize} people on ${bookingDate} at ${startTime}. Do you want to confirm the cancellation?",
+        "FORMAT_RESERVATION_FETCH_EMAIL": "Please tell me the email you provided to confirm your booking.",
+        "FORMAT_RESERVATION_FETCH_NAME": "Please tell me the name associated with your reservation.",
+        "FORMAT_RESERVATION_FETCH_RESERVATION_NUMBER": "Please tell me the reservation number associated with your booking.",
+        "FORMAT_RESERVATION_FETCH_DATE": "Please provide the date on which you have confirmed your booking."
     },
     "it": {
         "WELCOME_MESSAGE": "Benvenuto al ${restaurantName}, come posso aiutarla oggi?",
@@ -67,6 +71,10 @@
         "BOOKING_FOUND_W_RESERVATION_NUMBER": "Ho trovato la sua prenotazione con il numero ${reservation_number}.",
         "BOOKING_NOT_FOUND_W_RESERVATION_NUMBER": "Purtroppo non sono riuscito a trovare la prenotazione numero ${reservationNumber}.",
         "FORMAT_BOOKING_CANCELLATION_MODIFICATION": "Ecco le opzioni che abbiamo trovato per la tua prenotazione: ${formattedBookingOptions}, seleziona solo quella che contiene le tue informazioni.",
-        "CANCELLATION_CONFIRMATION": "La tua prenotazione è per le persone ${partySize} il ${bookingDate} alle ${startTime}. Vuoi confermare la cancellazione?"
+        "CANCELLATION_CONFIRMATION": "La tua prenotazione è per le persone ${partySize} il ${bookingDate} alle ${startTime}. Vuoi confermare la cancellazione?",
+        "FORMAT_RESERVATION_FETCH_EMAIL": "Per favore mi dica l'email che ha fornito a conferma della prenotazione.",
+        "FORMAT_RESERVATION_FETCH_NAME": "Per favore mi dica il nome associato alla sua prenotazione.",
+        "FORMAT_RESERVATION_FETCH_RESERVATION_NUMBER": "Per favore dimmi il numero di prenotazione associato alla tua prenotazione.",
+        "FORMAT_RESERVATION_FETCH_DATE": "Si prega di fornire la data in cui avete confermato la prenotazione."
     }
 }

@@ -35,7 +35,11 @@ export enum MessageKeys {
     BOOKING_FOUND_W_NAME = "BOOKING_FOUND_W_NAME",
     BOOKING_NOT_FOUND_W_NAME = "BOOKING_NOT_FOUND_W_NAME",
     FORMAT_BOOKING_CANCELLATION_MODIFICATION = "FORMAT_BOOKING_CANCELLATION_MODIFICATION",
-    CANCELLATION_CONFIRMATION = "CANCELLATION_CONFIRMATION"
+    CANCELLATION_CONFIRMATION = "CANCELLATION_CONFIRMATION",
+    FORMAT_RESERVATION_FETCH_EMAIL = "FORMAT_RESERVATION_FETCH_EMAIL",
+    FORMAT_RESERVATION_FETCH_NAME = "FORMAT_RESERVATION_FETCH_NAME",
+    FORMAT_RESERVATION_FETCH_RESERVATION_NUMBER = "FORMAT_RESERVATION_FETCH_RESERVATION_NUMBER",
+    FORMAT_RESERVATION_FETCH_DATE = "FORMAT_RESERVATION_FETCH_DATE"
 }
 
 export const messageVariableMap: Record<MessageKeys, string[]> = {
@@ -75,7 +79,11 @@ export const messageVariableMap: Record<MessageKeys, string[]> = {
     [MessageKeys.BOOKING_FOUND_W_NAME]: ["bookingName"],
     [MessageKeys.BOOKING_NOT_FOUND_W_NAME]: ["bookingName"],
     [MessageKeys.FORMAT_BOOKING_CANCELLATION_MODIFICATION]: ["formattedBookingOptions"],
-    [MessageKeys.CANCELLATION_CONFIRMATION]: ["partySize", "bookingDate", "startTime"]
+    [MessageKeys.CANCELLATION_CONFIRMATION]: ["partySize", "bookingDate", "startTime"],
+    [MessageKeys.FORMAT_RESERVATION_FETCH_EMAIL]: [],
+    [MessageKeys.FORMAT_RESERVATION_FETCH_NAME]: [],
+    [MessageKeys.FORMAT_RESERVATION_FETCH_RESERVATION_NUMBER]: [],
+    [MessageKeys.FORMAT_RESERVATION_FETCH_DATE]: []
 }
 
 export type MessageVariables = {
@@ -115,5 +123,9 @@ export type MessageVariables = {
     [MessageKeys.BOOKING_FOUND_W_NAME]: { bookingName: string },
     [MessageKeys.BOOKING_NOT_FOUND_W_NAME]: { bookingName: string },
     [MessageKeys.FORMAT_BOOKING_CANCELLATION_MODIFICATION]: { formattedBookingOptions: string },
-    [MessageKeys.CANCELLATION_CONFIRMATION]: { partySize: number, bookingDate: string, startTime: string }
+    [MessageKeys.CANCELLATION_CONFIRMATION]: { partySize: number, bookingDate: string, startTime: string },
+    [MessageKeys.FORMAT_RESERVATION_FETCH_EMAIL]: {},
+    [MessageKeys.FORMAT_RESERVATION_FETCH_NAME]: {},
+    [MessageKeys.FORMAT_RESERVATION_FETCH_RESERVATION_NUMBER]: {},
+    [MessageKeys.FORMAT_RESERVATION_FETCH_DATE]: {}
 }
