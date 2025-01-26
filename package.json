@@ -17,11 +17,15 @@
     "date-fns-tz": "^3.2.0",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
-    "firebase-admin": "^12.7.0"
+    "firebase-admin": "^12.7.0",
+    "stack-trace": "1.0.0-pre2",
+    "winston": "^3.17.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
     "@types/node": "^22.9.0",
+    "@types/stack-trace": "^0.0.33",
+    "@types/winston": "^2.4.4",
     "ts-node": "^10.9.2",
     "typescript": "^5.6.3"
   }

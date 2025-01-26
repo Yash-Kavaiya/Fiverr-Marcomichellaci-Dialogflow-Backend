@@ -50,12 +50,12 @@ export const addToBookings = async (detectIntentResponse: DetectIntentResponse):
             customerPhone: parameters.phone,
             date: bookingDate,
             duration: parameters.duration,
-            partySize: 4,
+            partySize: parameters.party_size,
             endTime: endTime,
             allergyTableRequests: parameters.allergy_table_needs || "No allergy and noe specific table needs.",
             additionalRequests: parameters.additional_needs || "No additional needs.",
             startTime: startTime,
-            status: "pending"
+            status: parameters.restaurantData.isConfirmationRequired ? "pending" : "confirmed"
         }
         const newBookingInfo = await addBookings({ booking: newBooking, restaurantId: parameters.restaurantId })
         console.log(newBookingInfo.id)

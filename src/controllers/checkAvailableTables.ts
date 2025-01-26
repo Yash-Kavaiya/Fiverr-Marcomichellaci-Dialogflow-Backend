@@ -1,14 +1,16 @@
 import { DetectIntentResponse, DialogflowResponse, WeeklyOperatingHours, Slot } from "../utils/types"
 import { ERROR_MESSAGE, BOOKING_STATUS } from "../config/constants"
 import { findAvailabilityByRestaurantPhoneAndDate, findBookingByCustomerDateAndBookingStatus, findRestaurantByPhone } from "../utils/firebaseFunctions"
-import { generateDialogflowResponse, getBookingDateAndtime, isTimeWithinRange } from "../utils/utils"
+import { formatTimeSlots, generateDialogflowResponse, getBookingDateAndtime, isTimeWithinRange } from "../utils/utils"
 import { getMessage } from "../utils/dynamicMessages"
 import { MessageKeys } from "../utils/messagesKey"
 
 export const checkAvailableTables = async (detectIntentResponse: DetectIntentResponse): Promise<DialogflowResponse> => {
+    console.log('Checking available tables...')
     try {
         const session = detectIntentResponse.sessionInfo.session
         const parameters = detectIntentResponse.sessionInfo.parameters
+        console.log(`Parameters: ${JSON.stringify(parameters, null, 2)}`)
         if (parameters == null) {
             return generateDialogflowResponse(
                 [ERROR_MESSAGE]
@@ -44,7 +46,9 @@ export const checkAvailableTables = async (detectIntentResponse: DetectIntentRes
         }
 
         const { currentDay, bookingDate, bookingTime } = getBookingDateAndtime({ day: day, month: month - 1, year: year, hours: hours, minutes: minutes })
+        console.log(`Date: ${bookingDate}, Time: ${bookingTime}, Day: ${currentDay}`)
         const restaurant = await findRestaurantByPhone(restaurantNumber)
+        console.log(`Restaurant: ${JSON.stringify(restaurant, null, 2)}`)
         if (restaurant) {
             const { data: restaurantData } = restaurant
 
@@ -100,6 +104,7 @@ export const checkAvailableTables = async (detectIntentResponse: DetectIntentRes
 
             // 4. Get availability for the date
             const availability = await findAvailabilityByRestaurantPhoneAndDate({ restaurantNumber: restaurantNumber, date: bookingDate })
+            console.log(`Availability: ${JSON.stringify(availability, null, 2)}`)
             if (!availability) {
                 return generateDialogflowResponse(
                     [
@@ -115,21 +120,27 @@ export const checkAvailableTables = async (detectIntentResponse: DetectIntentRes
             }
             const { data: availabilityData, id: availabilityId } = availability
             console.log(`Availability id: ${availabilityId}`)
-            console.log(`Availability data: ${JSON.stringify(availabilityData)}`)
+            console.log(`Availability data: ${JSON.stringify(availabilityData, null, 2)}`)
+
+            console.log(`Booking date: ${bookingDate}, Restaurant id: ${restaurantId}, Status: ${parameters.restaurantData.isConfirmationRequired ? "pending" : "confirmed"}`)
 
             // Get the existing bookings for the booking date
-            const existingBookings = await findBookingByCustomerDateAndBookingStatus({ date: bookingDate, restaurantId: restaurantId, status: "confirmed" })
+            const existingBookings = await findBookingByCustomerDateAndBookingStatus({ date: bookingDate, restaurantId: restaurantId, status: parameters.restaurantData.isConfirmationRequired ? "pending" : "confirmed" })
+            console.log(`Existing bookings: ${JSON.stringify(existingBookings, null, 2)}`)
             let alreadyBookedSeats = 0
             existingBookings?.data.forEach(data => {
-                if (data.status === 'confirmed') {
-                    alreadyBookedSeats += data.partySize
-                }
+                alreadyBookedSeats += data.partySize
             })
+
+            console.log(`Already booked seats: ${alreadyBookedSeats}`)
 
             // 5. Check all-day reservation if enabled
             const { bookingStartTime, bookingEndTime, availableSeats } = availabilityData.accpetAllDayReservation
+            console.log(`Booking start time: ${bookingStartTime}, Booking end time: ${bookingEndTime}, Available seats: ${availableSeats}`)
+            console.log(`Accepts all day booking: ${availabilityData.accpetAllDayReservation.status}`)
             if (availabilityData.accpetAllDayReservation.status) {
                 if (!isTimeWithinRange(bookingTime, bookingStartTime, bookingEndTime)) {
+                    console.log("NO_RESERVATION_OUT_OF_BOOKING_WINDOW")
                     return generateDialogflowResponse(
                         [
                             getMessage(detectIntentResponse.languageCode, MessageKeys.NO_RESERVATION_OUT_OF_BOOKING_WINDOW, { bookingDate: bookingDate, bookingTime: bookingTime, bookingEndTime: bookingEndTime, bookingStartTime: bookingStartTime })
@@ -144,6 +155,7 @@ export const checkAvailableTables = async (detectIntentResponse: DetectIntentRes
                 }
 
                 if ((availableSeats - alreadyBookedSeats) < partySize) {
+                    console.log("NO_RESERVATION_NO_SEAT")
                     return generateDialogflowResponse(
                         [
                             getMessage(detectIntentResponse.languageCode, MessageKeys.NO_RESERVATION_NO_SEAT, { bookingDate: bookingDate, bookingTime: bookingTime })
@@ -180,7 +192,7 @@ export const checkAvailableTables = async (detectIntentResponse: DetectIntentRes
                 })
                 availableTimeSlots = [...availableTimeSlots, ...matchingSlots]
             }
-            const dinnerData = availabilityData.lunch
+            const dinnerData = availabilityData.dinner
             if (dinnerData) {
                 // Add a small amount of logic to update the availableSeats depending on the alreadyBookedSeats
                 const matchingSlots = dinnerData.timeSlots.filter(slot => {
@@ -196,9 +208,12 @@ export const checkAvailableTables = async (detectIntentResponse: DetectIntentRes
             if (availableTimeSlots.length === 0) {
                 const allSlots = availabilityData.lunch.timeSlots.concat(availabilityData.dinner.timeSlots).map(slot => slot)
 
+                const formattedTimeSlotsString = formatTimeSlots({ availability: availabilityData })
+                console.log(`Formatted time slots: ${formattedTimeSlotsString}`)
+
                 return generateDialogflowResponse(
                     [
-                        getMessage(detectIntentResponse.languageCode, MessageKeys.NO_RESERVATION_NO_SEAT, { bookingDate: bookingDate, bookingTime: bookingTime })
+                        getMessage(detectIntentResponse.languageCode, MessageKeys.NO_RESERVATION_OUT_OF_BOOKING_WINDOW_LUNCH_DINNER, { bookingDate: bookingDate, bookingTime: bookingTime, formattedTimeSlotsString: formattedTimeSlotsString })
                     ],
                     {
                         session: session,

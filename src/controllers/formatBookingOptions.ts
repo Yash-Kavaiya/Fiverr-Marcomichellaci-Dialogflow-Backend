@@ -4,7 +4,7 @@ import { ERROR_MESSAGE } from "../config/constants"
 import { MessageKeys } from "../utils/messagesKey"
 import { getMessage } from "../utils/dynamicMessages"
 
-export const formatBookings = (detectIntentResponse: DetectIntentResponse): DialogflowResponse | null => {
+export const formatBookingOptions = (detectIntentResponse: DetectIntentResponse): DialogflowResponse | null => {
     try {
         const parameters = detectIntentResponse.sessionInfo.parameters
         if (parameters == null) {
@@ -14,13 +14,12 @@ export const formatBookings = (detectIntentResponse: DetectIntentResponse): Dial
         }
         if (parameters.foundBooking === "YES") {
             const bookings = parameters.booking as Bookings[];
-            const bookingsString = bookings.map((booking, index) => {
+            const formattedBookingOptions = bookings.map((booking, index) => {
                 return `Option: ${index + 1} Reservation Number: ${booking.reservationNumber}, Name: ${booking.customerName}, Email: ${booking.customerEmail}, Date: ${booking.date}`;
             })
             return generateDialogflowResponse(
                 [
-                    getMessage(detectIntentResponse.languageCode, MessageKeys.BOOKING_CANCELLED, {}),
-                    bookingsString.join("\n")
+                    getMessage(detectIntentResponse.languageCode, MessageKeys.FORMAT_BOOKING_CANCELLATION_MODIFICATION, { formattedBookingOptions: formattedBookingOptions.join(", ") }),
                 ]
             )
         }

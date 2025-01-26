@@ -13,6 +13,7 @@ export enum MessageKeys {
     NO_RESERVATION_OUT_OF_WORKING_HOURS = "NO_RESERVATION_OUT_OF_WORKING_HOURS",
     NO_RESERVATION_NO_AVAILABILITY = "NO_RESERVATION_NO_AVAILABILITY",
     NO_RESERVATION_OUT_OF_BOOKING_WINDOW = "NO_RESERVATION_OUT_OF_BOOKING_WINDOW",
+    NO_RESERVATION_OUT_OF_BOOKING_WINDOW_LUNCH_DINNER = "NO_RESERVATION_OUT_OF_BOOKING_WINDOW_LUNCH_DINNER",
     NO_RESERVATION_NO_SEAT = "NO_RESERVATION_NO_SEAT",
     RESTAURANT_CLOSED = "RESTAURANT_CLOSED",
     RESTAURANT_OPEN = "RESTAURANT_OPEN",
@@ -32,7 +33,9 @@ export enum MessageKeys {
     BOOKING_FOUND_W_EMAIL = "BOOKING_FOUND_W_EMAIL",
     BOOKING_NOT_FOUND_W_EMAIL = "BOOKING_NOT_FOUND_W_EMAIL",
     BOOKING_FOUND_W_NAME = "BOOKING_FOUND_W_NAME",
-    BOOKING_NOT_FOUND_W_NAME = "BOOKING_NOT_FOUND_W_NAME"
+    BOOKING_NOT_FOUND_W_NAME = "BOOKING_NOT_FOUND_W_NAME",
+    FORMAT_BOOKING_CANCELLATION_MODIFICATION = "FORMAT_BOOKING_CANCELLATION_MODIFICATION",
+    CANCELLATION_CONFIRMATION = "CANCELLATION_CONFIRMATION"
 }
 
 export const messageVariableMap: Record<MessageKeys, string[]> = {
@@ -50,6 +53,7 @@ export const messageVariableMap: Record<MessageKeys, string[]> = {
     [MessageKeys.NO_RESERVATION_OUT_OF_WORKING_HOURS]: ["bookingTime", "bookingDate"],
     [MessageKeys.NO_RESERVATION_NO_AVAILABILITY]: ["bookingTime", "bookingDate"],
     [MessageKeys.NO_RESERVATION_OUT_OF_BOOKING_WINDOW]: ["bookingTime", "bookingDate", "bookingStartTime", "bookingEndTime"],
+    [MessageKeys.NO_RESERVATION_OUT_OF_BOOKING_WINDOW_LUNCH_DINNER]: ["bookingTime", "bookingDate", "formattedTimeSlotsString"],
     [MessageKeys.NO_RESERVATION_NO_SEAT]: ["bookingTime", "bookingDate"],
     [MessageKeys.RESTAURANT_CLOSED]: [],
     [MessageKeys.RESTAURANT_OPEN]: [],
@@ -69,7 +73,9 @@ export const messageVariableMap: Record<MessageKeys, string[]> = {
     [MessageKeys.BOOKING_FOUND_W_EMAIL]: ["bookingEmail"],
     [MessageKeys.BOOKING_NOT_FOUND_W_EMAIL]: ["bookingEmail"],
     [MessageKeys.BOOKING_FOUND_W_NAME]: ["bookingName"],
-    [MessageKeys.BOOKING_NOT_FOUND_W_NAME]: ["bookingName"]
+    [MessageKeys.BOOKING_NOT_FOUND_W_NAME]: ["bookingName"],
+    [MessageKeys.FORMAT_BOOKING_CANCELLATION_MODIFICATION]: ["formattedBookingOptions"],
+    [MessageKeys.CANCELLATION_CONFIRMATION]: ["partySize", "bookingDate", "startTime"]
 }
 
 export type MessageVariables = {
@@ -87,6 +93,7 @@ export type MessageVariables = {
     [MessageKeys.NO_RESERVATION_OUT_OF_WORKING_HOURS]: { bookingTime: string, bookingDate: string },
     [MessageKeys.NO_RESERVATION_NO_AVAILABILITY]: { bookingTime: string, bookingDate: string },
     [MessageKeys.NO_RESERVATION_OUT_OF_BOOKING_WINDOW]: { bookingTime: string, bookingDate: string, bookingStartTime: string, bookingEndTime: string },
+    [MessageKeys.NO_RESERVATION_OUT_OF_BOOKING_WINDOW_LUNCH_DINNER]: { bookingTime: string, bookingDate: string, formattedTimeSlotsString: string },
     [MessageKeys.NO_RESERVATION_NO_SEAT]: { bookingTime: string, bookingDate: string },
     [MessageKeys.RESTAURANT_CLOSED]: {},
     [MessageKeys.RESTAURANT_OPEN]: {},
@@ -106,5 +113,7 @@ export type MessageVariables = {
     [MessageKeys.BOOKING_FOUND_W_EMAIL]: { bookingEmail: string }
     [MessageKeys.BOOKING_NOT_FOUND_W_EMAIL]: { bookingEmail: string },
     [MessageKeys.BOOKING_FOUND_W_NAME]: { bookingName: string },
-    [MessageKeys.BOOKING_NOT_FOUND_W_NAME]: { bookingName: string }
+    [MessageKeys.BOOKING_NOT_FOUND_W_NAME]: { bookingName: string },
+    [MessageKeys.FORMAT_BOOKING_CANCELLATION_MODIFICATION]: { formattedBookingOptions: string },
+    [MessageKeys.CANCELLATION_CONFIRMATION]: { partySize: number, bookingDate: string, startTime: string }
 }

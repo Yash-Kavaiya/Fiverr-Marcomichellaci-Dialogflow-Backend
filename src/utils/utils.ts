@@ -1,5 +1,5 @@
 import { format, formatInTimeZone } from "date-fns-tz"
-import { BookingDate, BookingDateAndTime, DialogflowMessage, DialogflowResponse, PageInfo, SessionInfo } from "./types"
+import { Availability, BookingDate, BookingDateAndTime, DialogflowMessage, DialogflowResponse, PageInfo, SessionInfo } from "./types"
 import { TIMEZONE } from "../config/constants"
 
 export const generateDialogflowResponse = (messages?: string[], sessionInfo?: SessionInfo, pageInfo?: PageInfo): DialogflowResponse => {
@@ -118,4 +118,16 @@ export const calculateStartAndEndTime = ({ startTime, duration }: { startTime: s
         startTime: formattedStartTime,
         endTime: formattedEndTime,
     };
+}
+
+export const formatTimeSlots = ({ availability }: { availability: Availability }): string => {
+    const formattedTimeSlots: string[] = [];
+    availability.lunch.timeSlots.forEach((slot) => {
+        formattedTimeSlots.push(`${slot.bookingStartTime} to ${slot.bookingEndTime}`)
+    })
+    availability.dinner.timeSlots.forEach((slot) => {
+        formattedTimeSlots.push(`${slot.bookingStartTime} to ${slot.bookingEndTime}`)
+    })
+    const formattedTimeSlotsString = formattedTimeSlots.join(", ")
+    return formattedTimeSlotsString
 }

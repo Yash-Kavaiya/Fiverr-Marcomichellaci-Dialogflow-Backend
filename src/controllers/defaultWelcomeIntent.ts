@@ -38,7 +38,7 @@ export const defaultWelcomeIntent = async (detectIntentResponse: DetectIntentRes
             )
         }
     } catch (error) {
-        console.error('Error checking restaurant status:', error)
+        console.error(`Error checking restaurant status: ${error}`)
         return generateDialogflowResponse(
             [ERROR_MESSAGE]
         )

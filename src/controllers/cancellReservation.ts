@@ -8,12 +8,19 @@ import { MessageKeys } from "../utils/messagesKey";
 export const cancellReservation = async (detectIntentResponse: DetectIntentResponse): Promise<DialogflowResponse | null> => {
     try {
         const parameters = detectIntentResponse.sessionInfo.parameters
+        console.log(`Parameters: ${JSON.stringify(parameters, null, 2)}`)
         if (parameters == null) {
             return generateDialogflowResponse(
                 [ERROR_MESSAGE]
             )
         }
-        const bookingId = parameters.booking.id || ""
+        let bookingId = ""
+        if (parameters.multipleBookings) {
+            const index = parameters.reservation_option - 1
+            bookingId = parameters.booking[index].id
+        } else {
+            bookingId = parameters.booking.id
+        }
         if (bookingId !== "") {
             const bookingUpdate: Partial<Bookings> = {
                 status: "cancelled"
